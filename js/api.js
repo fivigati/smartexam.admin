@@ -5,16 +5,26 @@ async function apiRequest(payload) {
 
   try {
 
+    const formData = new FormData();
+
+    formData.append(
+      'data',
+      JSON.stringify(payload)
+    );
+
     const response = await fetch(API_URL, {
+
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(payload)
+
+      body: formData
+
     });
 
-    const text = await response.text();
+    const text =
+      await response.text();
+
     console.log(text);
+
     return JSON.parse(text);
 
   } catch(err) {
@@ -22,8 +32,10 @@ async function apiRequest(payload) {
     console.error(err);
 
     return {
-      success: false,
-      message: 'Server error'
+
+      success:false,
+      message:'Server error'
+
     };
 
   }
