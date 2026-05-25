@@ -173,10 +173,9 @@
     </div>
 
   </section>
-<script>
+<script src="js/api.js"></script>
 
-const API_URL =
-'https://script.google.com/macros/s/AKFYCBxxxxxxxxxxxx/exec';
+<script>
 
 async function login() {
 
@@ -187,50 +186,34 @@ async function login() {
     document.getElementById('password').value.trim();
 
   if(!npsn || !password) {
+
     alert('NPSN dan password wajib diisi');
+
     return;
   }
 
-  try {
+  const result = await apiRequest({
 
-    const response = await fetch(API_URL, {
+    action: 'login',
+    npsn,
+    password
 
-      method: 'POST',
+  });
 
-      headers: {
-        'Content-Type': 'application/json'
-      },
+  console.log(result);
 
-      body: JSON.stringify({
-        action: 'login',
-        npsn,
-        password
-      })
+  if(result.success) {
 
-    });
+    localStorage.setItem(
+      'smart_exam_user',
+      JSON.stringify(result.user)
+    );
 
-    const result = await response.json();
+    window.location.href = 'dashboard.html';
 
-    if(result.success) {
+  } else {
 
-      localStorage.setItem(
-        'smart_exam_user',
-        JSON.stringify(result.user)
-      );
-
-      window.location.href = 'dashboard.html';
-
-    } else {
-
-      alert(result.message);
-
-    }
-
-  } catch(err) {
-
-    console.log(err);
-
-    alert('Server error');
+    alert(result.message);
 
   }
 
