@@ -1,55 +1,42 @@
-function login(data) {
+async function login() {
 
-  const sheet =
-    getSheet(CONFIG.SHEETS.USERS);
+  const npsn =
+    document.getElementById('npsn').value.trim();
 
-  const values =
-    sheet.getDataRange().getValues();
+  const password =
+    document.getElementById('password').value.trim();
 
-  const headers = values[0];
+  if(!npsn || !password) {
 
-  const npsnIndex =
-    headers.indexOf('school_npsn');
+    alert('NPSN dan password wajib diisi');
 
-  const passwordIndex =
-    headers.indexOf('password');
-
-  const activeIndex =
-    headers.indexOf('is_active');
-
-  for(let i = 1; i < values.length; i++) {
-
-    const row = values[i];
-
-    const schoolNpsn = row[npsnIndex];
-    const password = row[passwordIndex];
-    const isActive = row[activeIndex];
-
-    if(
-      schoolNpsn == data.npsn &&
-      password == data.password &&
-      isActive == true
-    ) {
-
-      return jsonResponse({
-        success: true,
-
-        user: {
-          id: row[0],
-          school_npsn: row[1],
-          full_name: row[2],
-          email: row[3],
-          role: row[4]
-        }
-      });
-
-    }
-
+    return;
   }
 
-  return jsonResponse({
-    success: false,
-    message: 'NPSN atau password salah'
+  const result = await apiRequest({
+
+    action: 'login',
+    npsn,
+    password
+
   });
+
+  console.log(result);
+
+  if(result.success) {
+
+    localStorage.setItem(
+      'smart_exam_user',
+      JSON.stringify(result.user)
+    );
+
+    window.location.href =
+      'dashboard.html';
+
+  } else {
+
+    alert(result.message);
+
+  }
 
 }
