@@ -13,7 +13,9 @@ async function apiRequest(payload) {
       body: JSON.stringify(payload)
     });
 
-    return await response.json();
+    const text = await response.text();
+    console.log(text);
+    return JSON.parse(text);
 
   } catch(err) {
 
