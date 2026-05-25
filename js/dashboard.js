@@ -56,13 +56,23 @@ async function loadDashboard() {
 
   // PREMIUM
   if(
-    school.plan_type === 'premium'
-  ){
+  school.plan_type === 'premium'
+){
 
-    document.getElementById(
-      'upgradeCard'
-    ).style.display = 'none';
+  // HAPUS CARD UPGRADE
+  document.getElementById(
+    'upgradeCard'
+  )?.remove();
 
-  }
+  // HAPUS ICON GEMBOK
+  document.getElementById(
+    'liveLock'
+  )?.remove();
+
+  document.getElementById(
+    'violationLock'
+  )?.remove();
+
+}
 
 }
