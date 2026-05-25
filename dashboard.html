@@ -66,7 +66,8 @@
 
       <!-- PRO CARD (Sesuai Permintaan) -->
       <div class="px-3 pb-3">
-        <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-amber-400 to-yellow-500 p-4 shadow-lg shadow-amber-100">
+        <div id="upgradeCard"
+          class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-amber-400 to-yellow-500 p-4 shadow-lg shadow-amber-100">
           <div class="absolute -right-3 -top-3 opacity-10">
             <i data-lucide="zap" class="w-16 h-16 text-white"></i>
           </div>
@@ -275,7 +276,10 @@
               <h3 class="text-sm font-bold text-slate-900">Ringkasan Sistem</h3>
               <p class="text-[11px] text-slate-500 mt-0.5">Penggunaan paket dan aktivitas Smart Exam.</p>
             </div>
-            <div class="rounded-lg bg-indigo-50 px-3 py-1.5 text-[10px] font-black uppercase text-indigo-600">BASIC PLAN</div>
+            <div id="planBadge"
+              class="rounded-lg bg-indigo-50 px-3 py-1.5 text-[10px] font-black uppercase text-indigo-600">
+              Loading...
+            </div>
           </div>
           
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -361,10 +365,32 @@
     </main>
   </div>
 
-  <script>
-    lucide.createIcons();
-    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    document.getElementById('todayDate').innerHTML = new Date().toLocaleDateString('id-ID', options);
-  </script>
+<script src="js/api.js"></script>
+<script src="js/dashboard.js"></script>
+
+<script>
+
+  lucide.createIcons();
+
+  const options = {
+
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+
+  };
+
+  document.getElementById(
+    'todayDate'
+  ).innerHTML =
+    new Date().toLocaleDateString(
+      'id-ID',
+      options
+    );
+
+  loadDashboard();
+
+</script>
 </body>
 </html>
