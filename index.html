@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Smart Exam Admin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+  </style>
+</head>
+
+<body class="bg-slate-50 text-slate-900">
+  <section class="min-h-screen grid lg:grid-cols-2">
+    <div class="hidden lg:flex relative overflow-hidden bg-slate-950 px-14 py-10 text-white flex-col justify-center">
+      <div class="absolute top-0 right-0 w-[500px] h-[500px] rounded-full bg-indigo-500/20 blur-3xl"></div>
+      <div class="relative z-10 max-w-xl">
+        <div class="flex items-center gap-4 mb-7">
+          <div class="w-16 h-16 rounded-3xl bg-gradient-to-br from-indigo-500 to-slate-800 flex items-center justify-center shadow-2xl shadow-indigo-500/20">
+            <span class="text-3xl font-bold text-white">S</span>
+          </div>
+          <div>
+            <h1 class="text-3xl font-bold tracking-tight">Smart Exam</h1>
+            <p class="mt-1 text-sm text-slate-400">Secure Digital Examination Platform</p>
+          </div>
+        </div>
+        <p class="mb-3 text-sm font-medium text-indigo-300">Smart Monitoring System</p>
+        <h2 class="text-5xl lg:text-6xl font-bold leading-[1.05] tracking-tight">Sistem ujian digital modern untuk sekolah masa kini.</h2>
+        <p class="mt-5 max-w-lg text-base leading-relaxed text-slate-300">Monitoring realtime, anti-cheat system, live session tracking, dan manajemen ujian dalam satu dashboard modern.</p>
+      </div>
+    </div>
+
+    <div class="flex items-center justify-center bg-white px-10 py-8">
+      <div class="w-full max-w-md">
+        <div class="mb-7 flex items-center gap-4 lg:hidden">
+          <div class="w-14 h-14 rounded-3xl bg-gradient-to-br from-indigo-500 to-slate-800 flex items-center justify-center shadow-xl shadow-indigo-500/20">
+            <span class="text-2xl font-bold text-white">S</span>
+          </div>
+          <div>
+            <h1 class="text-2xl font-bold tracking-tight text-slate-900">Smart Exam</h1>
+          </div>
+        </div>
+
+        <div class="mb-7">
+          <h2 class="text-4xl font-bold tracking-tight text-slate-900">Login Admin</h2>
+          <p class="mt-2 leading-relaxed text-slate-500">Masuk ke dashboard Smart Exam untuk mengelola ujian sekolah.</p>
+        </div>
+
+        <div class="space-y-4">
+          <div>
+            <label class="text-sm font-medium text-slate-600">NPSN (Username)</label>
+            <input type="text" id="npsn" placeholder="Masukkan NPSN" required
+                   class="mt-1.5 w-full rounded-xl border border-slate-200 px-4 py-3.5 outline-none transition-all focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100" />
+          </div>
+
+          <div>
+            <label class="text-sm font-medium text-slate-600">Password</label>
+            <input type="password" id="password" placeholder="••••••••" required
+                   class="w-full rounded-xl border border-slate-200 px-4 py-3.5 outline-none transition-all focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100" />
+          </div>
+
+          <button id="loginBtn" onclick="prosesLogin()" class="w-full rounded-xl bg-slate-900 py-3.5 font-medium text-white transition-all hover:bg-slate-800">
+            Masuk ke Dashboard
+          </button>
+
+          <div id="errorMsg" class="hidden mt-4 p-3 bg-rose-50 text-rose-600 text-sm rounded-xl text-center font-medium"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    function prosesLogin() {
+      const npsn = document.getElementById('npsn').value;
+      const password = document.getElementById('password').value;
+      const btn = document.getElementById('loginBtn');
+      const errorDiv = document.getElementById('errorMsg');
+
+      if (!npsn || !password) {
+        errorDiv.innerText = "NPSN dan Password wajib diisi!";
+        errorDiv.classList.remove('hidden');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerText = 'Memverifikasi...';
+      errorDiv.classList.add('hidden');
+
+      // Memanggil fungsi loginAdmin di Code.gs
+      google.script.run
+        .withSuccessHandler(res => {
+          if (res.success) {
+            // Jika sukses, arahkan ke dashboard
+            window.location.href = "https://script.google.com/macros/s/AKfycbx3SamwedBeCTTJGfN3BXMr0CEePYNupPsbxspwGM4GzA2izbWy5we-qo_SBWASh51BRA/exec?page=dashboard";
+          } else {
+            errorDiv.innerText = res.message;
+            errorDiv.classList.remove('hidden');
+            btn.disabled = false;
+            btn.innerText = 'Masuk ke Dashboard';
+          }
+        })
+        .withFailureHandler(err => {
+          errorDiv.innerText = "Terjadi kesalahan sistem.";
+          errorDiv.classList.remove('hidden');
+          btn.disabled = false;
+          btn.innerText = 'Masuk ke Dashboard';
+        })
+        .loginAdmin(npsn, password);
+    }
+<script>
+  function prosesLogin() {
+    const npsn = document.getElementById('npsn').value;
+    const password = document.getElementById('password').value;
+    const btn = document.getElementById('loginBtn');
+    const errorDiv = document.getElementById('errorMsg');
+
+    if (!npsn || !password) {
+      alert("Harap isi NPSN dan Password!");
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerText = "Memverifikasi...";
+
+    // Memanggil fungsi loginAdmin di Code.gs
+    google.script.run
+      .withSuccessHandler(res => {
+        if (res.success) {
+          // Sukses: pindah ke dashboard
+          window.location.href = "https://script.google.com/macros/s/AKfycbx3SamwedBeCTTJGfN3BXMr0CEePYNupPsbxspwGM4GzA2izbWy5we-qo_SBWASh51BRA/exec?page=dashboard";
+        } else {
+          // Gagal: tampilkan error
+          errorDiv.innerText = res.message;
+          errorDiv.classList.remove('hidden');
+          btn.disabled = false;
+          btn.innerText = "Masuk ke Dashboard";
+        }
+      })
+      .loginAdmin(npsn, password);
+  }
+</script>
+  </script>
+</body>
+</html>
