@@ -56,23 +56,36 @@ async function loadDashboard() {
 
   // PREMIUM
   if(
-  school.plan_type === 'premium'
-){
+    school.plan_type === 'premium'
+  ){
 
-  // HAPUS CARD UPGRADE
-  document.getElementById(
-    'upgradeCard'
-  )?.remove();
+    // HAPUS CARD UPGRADE
+    document.getElementById(
+      'upgradeCard'
+    )?.remove();
 
-  // HAPUS ICON GEMBOK
-  document.getElementById(
-    'liveLock'
-  )?.remove();
+    // HAPUS ICON GEMBOK
+    document.getElementById(
+      'liveLock'
+    )?.remove();
 
-  document.getElementById(
-    'violationLock'
-  )?.remove();
+    document.getElementById(
+      'violationLock'
+    )?.remove();
 
-}
+    // AKTIFKAN MENU
+    document.getElementById(
+      'liveSessionMenu'
+    )?.classList.remove(
+      'text-slate-500'
+    );
+
+    document.getElementById(
+      'liveSessionMenu'
+    )?.classList.add(
+      'text-slate-700'
+    );
+
+  }
 
 }
