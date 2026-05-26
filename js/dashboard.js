@@ -1,5 +1,6 @@
 async function loadDashboard() {
 
+  // GET USER
   const user =
     JSON.parse(
       localStorage.getItem(
@@ -30,41 +31,56 @@ async function loadDashboard() {
 
   console.log(result);
 
-  // ERROR
+  // ERROR API
   if(!result.success){
 
-    alert('Gagal memuat dashboard');
+    alert(
+      'Gagal memuat dashboard'
+    );
 
     return;
 
   }
 
+  // SCHOOL DATA
   const school =
     result.data.school;
 
-  // NAMA SEKOLAH
+  // =========================
+  // SCHOOL NAME
+  // =========================
   document.getElementById(
     'schoolName'
-  ).innerText =
+  )?.innerText =
     school.school_name;
 
-  // PLAN
+  // =========================
+  // PLAN BADGE
+  // =========================
   document.getElementById(
     'planBadge'
-  ).innerText =
-    school.plan_type.toUpperCase() + ' PLAN';
+  )?.innerText =
+    school.plan_type.toUpperCase()
+    +
+    ' PLAN';
 
-  // PREMIUM
+  // =========================
+  // PREMIUM ACCESS
+  // =========================
   if(
     school.plan_type === 'premium'
   ){
 
-    // HAPUS CARD UPGRADE
+    // =====================
+    // REMOVE UPGRADE CARD
+    // =====================
     document.getElementById(
       'upgradeCard'
     )?.remove();
 
-    // HAPUS ICON GEMBOK
+    // =====================
+    // REMOVE LOCK ICONS
+    // =====================
     document.getElementById(
       'liveLock'
     )?.remove();
@@ -73,7 +89,9 @@ async function loadDashboard() {
       'violationLock'
     )?.remove();
 
-    // AKTIFKAN MENU
+    // =====================
+    // ACTIVATE LIVE SESSION
+    // =====================
     document.getElementById(
       'liveSessionMenu'
     )?.classList.remove(
@@ -82,6 +100,21 @@ async function loadDashboard() {
 
     document.getElementById(
       'liveSessionMenu'
+    )?.classList.add(
+      'text-slate-700'
+    );
+
+    // =====================
+    // ACTIVATE VIOLATION MENU
+    // =====================
+    document.getElementById(
+      'violationMenu'
+    )?.classList.remove(
+      'text-slate-500'
+    );
+
+    document.getElementById(
+      'violationMenu'
     )?.classList.add(
       'text-slate-700'
     );
