@@ -41,7 +41,9 @@
 
       <!-- MENU -->
       <div class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-        <a href="dashboard.html" class="w-full flex items-center gap-3 rounded-lg bg-indigo-600 px-3 py-2 text-xs font-semibold text-white shadow-md shadow-indigo-100">
+        <a
+  href="dashboard.html"
+  class="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-100 transition-all">
           <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard
         </a>
         <a href="students.html" class="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-100 transition-all">
@@ -67,16 +69,16 @@
   </i>
 
 </a>
-          <a
+<a
   href="violations.html"
   id="violationMenu"
-  class="w-full flex items-center justify-between rounded-lg px-3 py-2 text-xs font-medium text-slate-500 hover:bg-slate-50 transition-all">
+  class="w-full flex items-center justify-between rounded-lg bg-indigo-600 px-3 py-2 text-xs font-semibold text-white shadow-md shadow-indigo-100">
 
   <div class="flex items-center gap-3">
 
     <i
       data-lucide="triangle-alert"
-      class="w-4 h-4 text-slate-400">
+      class="w-4 h-4">
     </i>
 
     <span>
@@ -88,7 +90,7 @@
   <i
     id="violationLock"
     data-lucide="lock"
-    class="w-3 h-3 text-slate-300">
+    class="w-3 h-3 text-white/70">
   </i>
 
 </a>
@@ -151,253 +153,82 @@
 
       <!-- CONTENT -->
       <div class="flex-1 overflow-y-auto p-5 space-y-5">
-        <!-- STATS -->
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <!-- CARD -->
-          <div class="card-hover relative overflow-hidden rounded-2xl border border-indigo-100 bg-white p-4 shadow-sm">
-            <div class="flex items-center justify-between relative z-10">
-              <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50">
-                <i data-lucide="clipboard-check" class="w-5 h-5 text-indigo-600"></i>
-              </div>
-              <span class="text-[9px] font-bold text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded-md uppercase tracking-tighter">Ujian Aktif</span>
-            </div>
-            <div class="mt-3 relative z-10">
-              <h3 class="text-2xl font-black tracking-tight text-slate-900 leading-none">12</h3>
-              <p class="mt-2 text-[10px] text-slate-500 flex items-center gap-1.5">
-                <span class="h-1.5 w-1.5 rounded-full bg-indigo-500 animate-pulse"></span> 2 sedang berlangsung
-              </p>
-            </div>
-            <i data-lucide="clipboard-check" class="absolute -right-4 -bottom-4 w-16 h-16 text-indigo-500/5"></i>
-          </div>
+        <!-- FILTER -->
+<div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
 
-          <!-- CARD -->
-          <div class="card-hover relative overflow-hidden rounded-2xl border border-emerald-100 bg-white p-4 shadow-sm">
-            <div class="flex items-center justify-between relative z-10">
-              <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50">
-                <i data-lucide="users" class="w-5 h-5 text-emerald-600"></i>
-              </div>
-              <span class="text-[9px] font-bold text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-md uppercase tracking-tighter">Siswa Online</span>
-            </div>
-            <div class="mt-3 relative z-10">
-              <h3 class="text-2xl font-black tracking-tight text-emerald-600 leading-none">245</h3>
-              <p class="mt-2 text-[10px] text-slate-500 flex items-center gap-1.5">
-                <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span> 18 siswa aktif
-              </p>
-            </div>
-            <i data-lucide="wifi" class="absolute -right-4 -bottom-4 w-16 h-16 text-emerald-500/5"></i>
-          </div>
+  <div class="flex flex-wrap gap-3">
 
-          <!-- CARD -->
-          <div class="card-hover relative overflow-hidden rounded-2xl border border-amber-100 bg-white p-4 shadow-sm">
-            <div class="flex items-center justify-between relative z-10">
-              <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50">
-                <i data-lucide="triangle-alert" class="w-5 h-5 text-amber-500"></i>
-              </div>
-              <span class="text-[9px] font-bold text-amber-500 bg-amber-50 px-2 py-0.5 rounded-md uppercase tracking-tighter">Pelanggaran</span>
-            </div>
-            <div class="mt-3 relative z-10">
-              <h3 class="text-2xl font-black tracking-tight text-amber-600 leading-none">8</h3>
-              <p class="mt-2 text-[10px] text-slate-500 flex items-center gap-1.5">
-                <span class="h-1.5 w-1.5 rounded-full bg-amber-500"></span> 3 warning baru
-              </p>
-            </div>
-            <i data-lucide="triangle-alert" class="absolute -right-4 -bottom-4 w-16 h-16 text-amber-500/5"></i>
-          </div>
+    <input
+      type="text"
+      id="searchViolation"
+      placeholder="Cari nama siswa..."
+      class="flex-1 min-w-[220px] rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-indigo-500">
 
-          <!-- CARD -->
-          <div class="card-hover relative overflow-hidden rounded-2xl border border-rose-100 bg-white p-4 shadow-sm">
-            <div class="flex items-center justify-between relative z-10">
-              <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-50">
-                <i data-lucide="shield-x" class="w-5 h-5 text-rose-500"></i>
-              </div>
-              <span class="text-[9px] font-bold text-rose-500 bg-rose-50 px-2 py-0.5 rounded-md uppercase tracking-tighter">Terblokir</span>
-            </div>
-            <div class="mt-3 relative z-10">
-              <h3 class="text-2xl font-black tracking-tight text-rose-600 leading-none">3</h3>
-              <p class="mt-2 text-[10px] text-slate-500 flex items-center gap-1.5">
-                <span class="h-1.5 w-1.5 rounded-full bg-rose-500"></span> Auto block aktif
-              </p>
-            </div>
-            <i data-lucide="shield-x" class="absolute -right-4 -bottom-4 w-16 h-16 text-rose-500/5"></i>
-          </div>
-        </div>
+    <select
+      id="filterClass"
+      class="rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-indigo-500">
+      <option value="">Semua Kelas</option>
+    </select>
 
-        <!-- GRID LOWER -->
-        <div class="grid grid-cols-1 gap-5 lg:grid-cols-3">
-          <!-- UJIAN TABLE -->
-          <div class="lg:col-span-2 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-            <div class="flex items-center justify-between mb-4 px-1">
-              <div>
-                <h3 class="text-sm font-bold text-slate-800">Ujian Hari Ini</h3>
-                <p class="text-[10px] text-slate-400 mt-0.5">Jadwal ujian aktif hari ini.</p>
-              </div>
-              <button class="text-[10px] font-bold text-indigo-600 hover:underline">Lihat Semua</button>
-            </div>
-            <div class="space-y-2">
-              <div class="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50/50 p-3">
-                <div class="flex items-center gap-3">
-                  <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-100 shrink-0">
-                    <i data-lucide="calculator" class="w-5 h-5 text-indigo-600"></i>
-                  </div>
-                  <div>
-                    <p class="text-xs font-bold text-slate-800">Matematika</p>
-                    <p class="text-[10px] text-slate-400">08.00 - 10.00 • Kelas 9A</p>
-                  </div>
-                </div>
-                <div class="rounded-full bg-emerald-100 px-2.5 py-1 text-[9px] font-bold text-emerald-600">Berlangsung</div>
-              </div>
+    <select
+      id="filterRoom"
+      class="rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-indigo-500">
+      <option value="">Semua Ruang</option>
+    </select>
 
-              <div class="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50/50 p-3">
-                <div class="flex items-center gap-3">
-                  <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-100 shrink-0">
-                    <i data-lucide="flask-conical" class="w-5 h-5 text-amber-500"></i>
-                  </div>
-                  <div>
-                    <p class="text-xs font-bold text-slate-800">IPA Terpadu</p>
-                    <p class="text-[10px] text-slate-400">10.30 - 12.00 • Kelas 9B</p>
-                  </div>
-                </div>
-                <div class="rounded-full bg-blue-100 px-2.5 py-1 text-[9px] font-bold text-blue-600">Akan Datang</div>
-              </div>
-            </div>
-          </div>
+    <button
+      onclick="printViolations()"
+      class="rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-800">
 
-          <!-- ACTIVITY -->
-          <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-            <div class="mb-4 px-1">
-              <h3 class="text-sm font-bold text-slate-800">Aktivitas Terbaru</h3>
-              <p class="text-[10px] text-slate-400 mt-0.5">Aktivitas sistem terbaru.</p>
-            </div>
-            <div class="space-y-4">
-              <div class="flex gap-3">
-                <div class="h-8 w-8 rounded-lg bg-indigo-50 flex items-center justify-center shrink-0">
-                  <i data-lucide="refresh-cw" class="w-4 h-4 text-indigo-600"></i>
-                </div>
-                <div>
-                  <p class="text-[11px] font-medium text-slate-700 leading-snug">Bagas reconnect ke sesi ujian.</p>
-                  <p class="text-[9px] text-slate-400 mt-0.5">3 menit lalu</p>
-                </div>
-              </div>
-              <div class="flex gap-3">
-                <div class="h-8 w-8 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
-                  <i data-lucide="user-check" class="w-4 h-4 text-emerald-600"></i>
-                </div>
-                <div>
-                  <p class="text-[11px] font-medium text-slate-700 leading-snug">12 siswa berhasil login.</p>
-                  <p class="text-[9px] text-slate-400 mt-0.5">8 menit lalu</p>
-                </div>
-              </div>
-              <div class="flex gap-3">
-                <div class="h-8 w-8 rounded-lg bg-amber-50 flex items-center justify-center shrink-0">
-                  <i data-lucide="triangle-alert" class="w-4 h-4 text-amber-500"></i>
-                </div>
-                <div>
-                  <p class="text-[11px] font-medium text-slate-700 leading-snug">Upgrade PRO untuk buka log.</p>
-                  <p class="text-[9px] text-slate-400 mt-0.5">Informasi Sistem</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+      Print
 
-        <!-- RINGKASAN SISTEM (Sesuai Format Asli) -->
-        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div class="flex items-center justify-between mb-5">
-            <div>
-              <h3 class="text-sm font-bold text-slate-900">Ringkasan Sistem</h3>
-              <p class="text-[11px] text-slate-500 mt-0.5">Penggunaan paket dan aktivitas Smart Exam.</p>
-            </div>
-            <div id="planBadge"
-              class="rounded-lg bg-indigo-50 px-3 py-1.5 text-[10px] font-black uppercase text-indigo-600">
-              Loading...
-            </div>
-          </div>
-          
-          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <!-- ITEM 1 -->
-            <div class="rounded-xl border border-slate-100 p-4 bg-white shadow-sm">
-              <div class="flex items-center gap-3">
-                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 shrink-0">
-                  <i data-lucide="database" class="w-5 h-5 text-indigo-600"></i>
-                </div>
-                <div>
-                  <p class="text-xs font-bold text-slate-800 leading-none">Data Siswa</p>
-                  <p class="text-[10px] text-slate-400 mt-1.5">78 / 100 siswa</p>
-                </div>
-              </div>
-              <div class="mt-4 h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                <div class="h-full bg-indigo-500 w-[78%] rounded-full"></div>
-              </div>
-              <div class="mt-2 flex justify-between">
-                <p class="text-[9px] text-slate-400">Penggunaan</p>
-                <p class="text-[9px] font-black text-indigo-600">78%</p>
-              </div>
-            </div>
+    </button>
 
-            <!-- ITEM 2 -->
-            <div class="rounded-xl border border-slate-100 p-4 bg-white shadow-sm">
-              <div class="flex items-center gap-3">
-                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 shrink-0">
-                  <i data-lucide="calendar-range" class="w-5 h-5 text-emerald-600"></i>
-                </div>
-                <div>
-                  <p class="text-xs font-bold text-slate-800 leading-none">Jadwal Ujian</p>
-                  <p class="text-[10px] text-slate-400 mt-1.5">1 / 2 ujian aktif</p>
-                </div>
-              </div>
-              <div class="mt-4 h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                <div class="h-full bg-emerald-500 w-[50%] rounded-full"></div>
-              </div>
-              <div class="mt-2 flex justify-between">
-                <p class="text-[9px] text-slate-400">Penggunaan</p>
-                <p class="text-[9px] font-black text-emerald-600">50%</p>
-              </div>
-            </div>
+    <button
+      onclick="deleteAllViolations()"
+      class="rounded-xl bg-rose-500 px-5 py-3 text-sm font-semibold text-white hover:bg-rose-600">
 
-            <!-- ITEM 3 -->
-            <div class="rounded-xl border border-slate-100 p-4 bg-white shadow-sm">
-              <div class="flex items-center gap-3">
-                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 shrink-0">
-                  <i data-lucide="activity" class="w-5 h-5 text-amber-600"></i>
-                </div>
-                <div>
-                  <p class="text-xs font-bold text-slate-800 leading-none">Aktivitas Sistem</p>
-                  <p class="text-[10px] text-slate-400 mt-1.5">243 / 500 aktivitas</p>
-                </div>
-              </div>
-              <div class="mt-4 h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                <div class="h-full bg-amber-500 w-[48%] rounded-full"></div>
-              </div>
-              <div class="mt-2 flex justify-between">
-                <p class="text-[9px] text-slate-400">Penggunaan</p>
-                <p class="text-[9px] font-black text-amber-600">48%</p>
-              </div>
-            </div>
+      Hapus Semua
 
-            <!-- ITEM 4 -->
-            <div class="rounded-xl border border-slate-100 p-4 bg-white shadow-sm">
-              <div class="flex items-center gap-3">
-                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-50 shrink-0">
-                  <i data-lucide="badge-info" class="w-5 h-5 text-violet-600"></i>
-                </div>
-                <div>
-                  <p class="text-xs font-bold text-slate-800 leading-none">Versi Aplikasi</p>
-                  <p class="text-[10px] text-slate-400 mt-1.5">Smart Exam V4</p>
-                </div>
-              </div>
-              <div class="mt-4 rounded-lg bg-violet-50 p-2 border border-violet-100">
-                <p class="text-[9px] font-bold text-violet-600 leading-none">V 4.0 Stable</p>
-                <p class="text-[8px] text-violet-400 mt-1">Update: Mei 2025</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+    </button>
+
+  </div>
+
+</div>
+
+<!-- TABLE -->
+<div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+
+  <!-- HEADER -->
+  <div class="grid grid-cols-6 gap-4 border-b border-slate-100 bg-slate-50 px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">
+
+    <div>Waktu</div>
+    <div>Nama Siswa</div>
+    <div>Mapel</div>
+    <div>Pelanggaran</div>
+    <div>Status</div>
+    <div class="text-center">Aksi</div>
+
+  </div>
+
+  <!-- CONTENT -->
+  <div
+    id="violationsTable"
+    class="divide-y divide-slate-100">
+
+    <!-- AUTO JS -->
+
+  </div>
+
+</div>
+</div>
+      
     </main>
   </div>
 
 <script src="js/api.js"></script>
 <script src="js/dashboard.js"></script>
+<script src="js/violations.js"></script>
 
 <script>
 
@@ -420,7 +251,13 @@
       options
     );
 
+  window.onload = () => {
+
   loadDashboard();
+
+  loadViolations();
+
+};
 
 </script>
 </body>
