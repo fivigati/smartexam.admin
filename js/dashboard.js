@@ -57,29 +57,37 @@ async function loadDashboard() {
     // SCHOOL DATA
     // =========================
     const school =
-      result.data.school || {};
+    result?.data?.school || {};
 
     // =========================
     // SCHOOL NAME
     // =========================
-    document.getElementById(
-      'schoolName'
-    )?.innerText =
-      school.school_name ||
-      'Smart Exam';
-
+    const schoolNameEl =
+      document.getElementById(
+    'schoolName'
+      );
+    
+    if(schoolNameEl){
+    schoolNameEl.innerText =
+    school.school_name ||
+    'Smart Exam';
+    }
     // =========================
     // PLAN BADGE
     // =========================
-    document.getElementById(
-      'planBadge'
-    )?.innerText =
-      (
-        school.plan_type ||
-        'free'
-      ).toUpperCase()
-      +
-      ' PLAN';
+    const planBadgeEl =
+      document.getElementById(
+    'planBadge'
+      );
+    
+    if(planBadgeEl){
+      planBadgeEl.innerText =
+        (school.plan_type ||
+         'free'
+        ).toUpperCase()
+        +
+    ' PLAN';
+    }
 
     // =========================
     // PREMIUM ACCESS
