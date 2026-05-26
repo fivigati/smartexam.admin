@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Smart Exam Dashboard - Compact Version</title>
+  <title>Smart Exam Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -41,7 +41,7 @@
 
       <!-- MENU -->
       <div class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-        <button class="w-full flex items-center gap-3 rounded-lg bg-indigo-600 px-3 py-2 text-xs font-semibold text-white shadow-md shadow-indigo-100">
+        <button class="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-100 transition-all">
           <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard
         </button>
         <button class="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-100 transition-all">
@@ -55,7 +55,7 @@
           <p class="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Fitur Lanjutan</p>
           <a href="live-session.html"
             id="liveSessionMenu"
-            class="w-full flex items-center justify-between rounded-lg px-3 py-2 text-xs font-medium text-slate-500 hover:bg-slate-50 transition-all">
+            class="w-full flex items-center justify-between rounded-lg bg-indigo-600 px-3 py-2 text-xs font-semibold text-white shadow-md shadow-indigo-100">
             <div class="flex items-center gap-3">
               <i data-lucide="radio" class="w-4 h-4 text-slate-400"></i>
               Live Session
@@ -102,35 +102,69 @@
     </aside>
 
     <!-- MAIN -->
-    <!-- CONTENT -->
-    <main class="flex-1 p-8">
+<main class="flex-1 flex flex-col overflow-hidden">
 
-      <!-- HEADER -->
-      <div class="mb-8 flex items-center justify-between">
+  <!-- TOPBAR -->
+  <header class="flex items-center justify-between border-b border-slate-200 bg-white px-6 py-3 shrink-0">
 
-        <div>
+    <div>
 
-          <h1 class="text-2xl font-black text-slate-800">
-            Live Session Monitoring
-          </h1>
+      <div class="flex items-center gap-2">
 
-          <p class="mt-1 text-sm text-slate-400">
-            Monitoring aktivitas peserta ujian secara realtime
+        <h2 class="text-xl font-black tracking-tight text-slate-900 leading-none">
+          Live Session
+        </h2>
+
+        <div class="rounded-full bg-emerald-100 px-2 py-0.5 text-[9px] font-bold text-emerald-600">
+          REALTIME ACTIVE
+        </div>
+
+      </div>
+
+      <p class="text-[11px] text-slate-500 mt-1">
+        Monitoring aktivitas peserta ujian secara realtime.
+      </p>
+
+    </div>
+
+    <div class="flex items-center gap-4">
+
+      <div class="hidden md:flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5">
+
+        <i data-lucide="calendar-days" class="w-4 h-4 text-indigo-500"></i>
+
+        <p id="todayDate" class="text-xs font-bold text-slate-600">
+          Loading...
+        </p>
+
+      </div>
+
+      <div class="flex items-center gap-3 border-l border-slate-200 pl-4">
+
+        <div class="text-right hidden sm:block">
+
+          <p class="text-xs font-bold text-slate-800 leading-none">
+            Administrator
+          </p>
+
+          <p class="text-[9px] text-slate-400 mt-0.5">
+            Operator Sekolah
           </p>
 
         </div>
 
-        <button
-
-          onclick="deleteAllSessions()"
-
-          class="rounded-xl bg-red-600 px-5 py-3 text-sm font-semibold text-white transition-all hover:bg-red-700">
-
-          Reset Semua Session
-
-        </button>
+        <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-900 text-xs font-bold text-white shadow-sm">
+          AD
+        </div>
 
       </div>
+
+    </div>
+
+  </header>
+
+  <!-- CONTENT -->
+  <div class="flex-1 overflow-y-auto p-5 space-y-5">
 
       <!-- FILTER -->
       <div class="mb-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
