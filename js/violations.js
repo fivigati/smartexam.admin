@@ -59,34 +59,30 @@ async function loadViolations(){
     ){
 
       table.innerHTML = `
+      <div class="flex flex-col items-center justify-center py-24 text-center">
+      <div class="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50">
+      <i
+        data-lucide="shield-check"
+        class="h-8 w-8 text-emerald-500">
+      </i>
 
-        <div class="py-20 text-center">
+    </div>
 
-          <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50">
+    <h3 class="text-sm font-bold text-slate-700">
 
-            <i
-              data-lucide="shield-check"
-              class="h-8 w-8 text-emerald-500">
-            </i>
+      Belum ada pelanggaran hari ini
 
-          </div>
+    </h3>
 
-          <h3 class="text-sm font-bold text-slate-700">
+    <p class="mt-1 text-xs text-slate-400">
 
-            Belum ada pelanggaran hari ini
+      Sistem tidak menemukan aktivitas pelanggaran siswa.
 
-          </h3>
+    </p>
 
-          <p class="mt-1 text-xs text-slate-400">
+  </div>
 
-            Sistem tidak menemukan aktivitas pelanggaran siswa.
-
-          </p>
-
-        </div>
-
-      `;
-
+`;
       lucide.createIcons();
 
       return;
