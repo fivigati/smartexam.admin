@@ -96,7 +96,7 @@ async function loadViolations(){
 
       table.innerHTML += `
 
-      <div class="grid grid-cols-6 gap-4 items-center border-t border-slate-100 px-6 py-4 hover:bg-slate-50 transition-all">
+      <div class="grid grid-cols-5 gap-4 items-center border-t border-slate-100 px-6 py-4 hover:bg-slate-50 transition-all">
 
         <!-- WAKTU -->
         <div>
@@ -157,17 +157,6 @@ async function loadViolations(){
           <div class="inline-flex w-fit rounded-full bg-amber-50 px-3 py-1 text-[10px] font-bold text-amber-600">
 
             ${item.action_taken}
-
-          </div>
-
-        </div>
-
-        <!-- STATUS -->
-        <div>
-
-          <div class="inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-600">
-
-            Terdeteksi
 
           </div>
 
