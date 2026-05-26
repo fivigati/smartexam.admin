@@ -1,117 +1,181 @@
 async function loadViolations(){
 
-  const user =
-    JSON.parse(
-      localStorage.getItem(
-        'smart_exam_user'
-      )
-    );
+  try{
 
-  const result =
-    await apiRequest({
+    // =========================
+    // GET USER
+    // =========================
+    const user =
+      JSON.parse(
+        localStorage.getItem(
+          'smart_exam_user'
+        )
+      );
 
-      action:'getViolations',
+    // =========================
+    // REQUEST API
+    // =========================
+    const result =
+      await apiRequest({
 
-      school_npsn:
-        user.school_npsn
+        action:'getViolations',
 
-    });
+        school_npsn:
+          user.school_npsn
 
-  console.log(result);
+      });
 
-  if(!result.success) return;
+    console.log(result);
 
-  const table =
-    document.getElementById(
-      'violationTable'
-    );
+    // =========================
+    // ERROR API
+    // =========================
+    if(!result.success){
 
-  table.innerHTML = '';
+      console.error(
+        result.message
+      );
 
-  result.data.forEach(item=>{
+      return;
 
-    table.innerHTML += `
+    }
 
-      <tr class="border-b border-slate-100 hover:bg-slate-50 transition-all">
+    // =========================
+    // TABLE
+    // =========================
+    const table =
+      document.getElementById(
+        'violationsTable'
+      );
+
+    table.innerHTML = '';
+
+    // =========================
+    // EMPTY STATE
+    // =========================
+    if(result.data.length === 0){
+
+      table.innerHTML = `
+
+        <div class="py-20 text-center">
+
+          <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50">
+
+            <i
+              data-lucide="shield-check"
+              class="h-8 w-8 text-emerald-500">
+            </i>
+
+          </div>
+
+          <h3 class="text-sm font-bold text-slate-700">
+
+            Belum ada pelanggaran hari ini
+
+          </h3>
+
+          <p class="mt-1 text-xs text-slate-400">
+
+            Sistem tidak menemukan aktivitas pelanggaran siswa.
+
+          </p>
+
+        </div>
+
+      `;
+
+      lucide.createIcons();
+
+      return;
+
+    }
+
+    // =========================
+    // RENDER DATA
+    // =========================
+    result.data.forEach(item=>{
+
+      table.innerHTML += `
+
+      <div class="grid grid-cols-6 gap-4 items-center border-t border-slate-100 px-6 py-4 hover:bg-slate-50 transition-all">
 
         <!-- WAKTU -->
-        <td class="px-5 py-4">
+        <div>
 
-          <div class="flex flex-col">
+          <div class="text-sm font-semibold text-slate-800">
 
-            <span class="text-sm font-semibold text-slate-800">
-
-              ${formatTime(item.created_at)}
-
-            </span>
-
-            <span class="text-xs text-slate-400 mt-1">
-
-              ${formatDate(item.created_at)}
-
-            </span>
+            ${formatTime(item.created_at)}
 
           </div>
 
-        </td>
+          <div class="mt-1 text-xs text-slate-400">
+
+            ${formatDate(item.created_at)}
+
+          </div>
+
+        </div>
 
         <!-- NAMA -->
-        <td class="px-5 py-4">
+        <div>
 
-          <div class="flex flex-col">
+          <div class="text-sm font-semibold text-slate-800">
 
-            <span class="text-sm font-semibold text-slate-800">
-
-              ${item.student_name}
-
-            </span>
-
-            <span class="text-xs text-slate-400 mt-1">
-
-              ${item.student_class}
-              •
-              ${item.student_room}
-
-            </span>
+            ${item.student_name}
 
           </div>
 
-        </td>
+          <div class="mt-1 text-xs text-slate-400">
+
+            ${item.student_class}
+            •
+            ${item.student_room}
+
+          </div>
+
+        </div>
 
         <!-- MAPEL -->
-        <td class="px-5 py-4">
+        <div>
 
           <div class="inline-flex rounded-full bg-indigo-50 px-3 py-1 text-xs font-bold text-indigo-600">
 
-            ${item.subject}
+            ${item.subject || '-'}
 
           </div>
 
-        </td>
+        </div>
 
         <!-- PELANGGARAN -->
-        <td class="px-5 py-4">
+        <div class="flex flex-col gap-2">
 
-          <div class="flex flex-col gap-2">
+          <div class="inline-flex w-fit rounded-full bg-rose-50 px-3 py-1 text-xs font-bold text-rose-600">
 
-            <div class="inline-flex rounded-full bg-rose-50 px-3 py-1 text-xs font-bold text-rose-600">
-
-              ${item.violation_type}
-
-            </div>
-
-            <div class="inline-flex rounded-full bg-amber-50 px-3 py-1 text-[10px] font-bold text-amber-600">
-
-              ${item.action_taken}
-
-            </div>
+            ${item.violation_type}
 
           </div>
 
-        </td>
+          <div class="inline-flex w-fit rounded-full bg-amber-50 px-3 py-1 text-[10px] font-bold text-amber-600">
+
+            ${item.action_taken}
+
+          </div>
+
+        </div>
+
+        <!-- STATUS -->
+        <div>
+
+          <div class="inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-600">
+
+            Terdeteksi
+
+          </div>
+
+        </div>
 
         <!-- AKSI -->
-        <td class="px-5 py-4">
+        <div class="text-center">
 
           <button
 
@@ -123,16 +187,30 @@ async function loadViolations(){
 
           </button>
 
-        </td>
+        </div>
 
-      </tr>
+      </div>
 
-    `;
+      `;
 
-  });
+    });
+
+    // =========================
+    // REFRESH ICON
+    // =========================
+    lucide.createIcons();
+
+  }catch(err){
+
+    console.error(err);
+
+  }
 
 }
 
+// =========================
+// FORMAT DATE
+// =========================
 function formatDate(dateString){
 
   return new Date(
@@ -143,6 +221,26 @@ function formatDate(dateString){
 
 }
 
+// =========================
+// FORMAT TIME
+// =========================
+function formatTime(dateString){
+
+  return new Date(
+    dateString
+  ).toLocaleTimeString(
+    'id-ID',
+    {
+      hour:'2-digit',
+      minute:'2-digit'
+    }
+  );
+
+}
+
+// =========================
+// RESET SISWA
+// =========================
 async function resetStudent(nisn){
 
   const confirmDelete =
@@ -176,6 +274,10 @@ async function resetStudent(nisn){
   loadViolations();
 
 }
+
+// =========================
+// DELETE ALL
+// =========================
 async function deleteAllViolations(){
 
   const confirmDelete =
@@ -207,10 +309,25 @@ async function deleteAllViolations(){
   loadViolations();
 
 }
+
+// =========================
+// AUTO LOAD
+// =========================
 loadViolations();
 
-setInterval(()=>{
+// =========================
+// AUTO REFRESH
+// =========================
+setInterval(async ()=>{
 
-  loadViolations();
+  if(
+    document.visibilityState
+    ===
+    'visible'
+  ){
+
+    await loadViolations();
+
+  }
 
 },5000);
