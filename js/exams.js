@@ -21,55 +21,54 @@ async function loadExams() {
 // --- 2. RENDER UI CARDS ---
 function renderExams(data) {
     const container = document.getElementById('exams-container');
-    if (!data || data.length === 0) return container.innerHTML = `<p class="col-span-full text-center text-slate-400 py-10">Belum ada jadwal.</p>`;
+    if (!data || data.length === 0) {
+        container.innerHTML = `<div class="col-span-full p-10 text-center text-slate-400">Belum ada jadwal ujian.</div>`;
+        return;
+    }
 
-    container.innerHTML = data.map(ex => `
-        <div class="group relative bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-            <div class="absolute top-4 right-4 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button onclick="editUjian('${ex.subject}')" class="p-2 bg-slate-100 text-slate-600 rounded-full hover:bg-indigo-50 hover:text-indigo-600"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
-                <button onclick="hapusUjianBySubject('${ex.subject}')" class="p-2 bg-slate-100 text-slate-600 rounded-full hover:bg-rose-50 hover:text-rose-600"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+    container.innerHTML = data.map(ex => {
+        // Status logic
+        const isActive = ex.exam_status === 'active';
+        
+        return `
+        <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all">
+            <div class="flex justify-between items-start mb-4">
+                <div class="flex items-center gap-3">
+                    <div class="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl"><i data-lucide="book-open" class="w-5 h-5"></i></div>
+                    <div>
+                        <h3 class="font-bold text-slate-900">${ex.subject}</h3>
+                        <div class="flex items-center gap-3 text-[10px] text-slate-500 mt-0.5">
+                            <span class="flex items-center gap-1"><i data-lucide="calendar" class="w-3 h-3"></i>${ex.exam_date}</span>
+                            <span class="flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i>${ex.start_time} - ${ex.end_time}</span>
+                        </div>
+                    </div>
+                </div>
+                <span class="text-[9px] font-bold px-2 py-1 rounded-full ${isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}">
+                    ${isActive ? 'ACTIVE' : 'INACTIVE'}
+                </span>
             </div>
 
-            <div class="flex items-center gap-4 mb-6">
-                <div class="p-4 bg-gradient-to-br from-indigo-50 to-purple-50 text-indigo-600 rounded-2xl shadow-inner">
-                    <i data-lucide="file-text" class="w-6 h-6"></i>
-                </div>
-                <div>
-                    <h3 class="font-black text-slate-800 text-lg">${ex.subject}</h3>
-                    <span class="text-[11px] font-bold tracking-wider ${ex.exam_status === 'active' ? 'text-emerald-500' : 'text-slate-400'}">
-                        ● ${ex.exam_status.toUpperCase()}
-                    </span>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-3 mb-6">
-                <div class="bg-slate-50 p-3 rounded-2xl">
-                    <p class="text-[9px] text-slate-400 uppercase font-bold">Tanggal</p>
-                    <p class="text-xs font-bold text-slate-700">${ex.exam_date}</p>
-                </div>
-                <div class="bg-slate-50 p-3 rounded-2xl">
-                    <p class="text-[9px] text-slate-400 uppercase font-bold">Waktu</p>
-                    <p class="text-xs font-bold text-slate-700">${ex.start_time} - ${ex.end_time}</p>
-                </div>
-            </div>
-
-            <div class="space-y-2">
+            <div class="space-y-1.5 mb-5">
                 ${ex.targets.map(t => `
-                    <div class="flex justify-between items-center text-xs bg-white border border-slate-100 px-4 py-3 rounded-xl hover:border-indigo-200 transition-colors">
-                        <span class="font-bold text-slate-600">${t.class}</span>
+                    <div class="flex justify-between items-center text-xs bg-slate-50 px-3 py-2 rounded-lg">
+                        <span class="font-bold text-slate-700">${t.class}</span>
                         <a href="${t.link}" target="_blank" class="text-indigo-600 font-bold hover:underline flex items-center gap-1">Link <i data-lucide="external-link" class="w-3 h-3"></i></a>
                     </div>
                 `).join('')}
             </div>
-            
-            <div class="mt-6 flex gap-2 border-t border-slate-50 pt-4">
-                <div class="flex-1 flex gap-2">
-                    <span class="flex-1 text-center bg-emerald-50 text-emerald-700 py-2 rounded-xl text-[10px] font-black border border-emerald-100">IN: ${ex.entry_token}</span>
-                    <span class="flex-1 text-center bg-rose-50 text-rose-600 py-2 rounded-xl text-[10px] font-black border border-rose-100">OUT: ${ex.exit_token}</span>
+
+            <div class="flex gap-2">
+                <div class="flex-1 flex gap-1">
+                    <span class="flex-1 text-center bg-emerald-50 text-emerald-700 py-1.5 rounded-lg border border-emerald-100 text-[10px] font-bold">IN: ${ex.entry_token}</span>
+                    <span class="flex-1 text-center bg-rose-50 text-rose-600 py-1.5 rounded-lg border border-rose-100 text-[10px] font-bold">OUT: ${ex.exit_token}</span>
                 </div>
+                <button onclick="hapusUjianBySubject('${ex.subject}')" class="px-3 bg-slate-100 text-slate-600 rounded-lg hover:bg-rose-50 hover:text-rose-600 transition-colors">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
             </div>
         </div>
-    `).join('');
+        `;
+    }).join('');
     lucide.createIcons();
 }
 
