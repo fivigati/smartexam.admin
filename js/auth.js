@@ -100,4 +100,27 @@ async function login() {
 
   }
 
+  function checkPremiumAccess() {
+    const user = JSON.parse(localStorage.getItem('smart_exam_user'));
+    const isPremium = user && user.plan_type?.toLowerCase().trim() === 'premium';
+
+    if (!isPremium) {
+        // 1. Tampilkan Banner Lock (Jika ada container-nya)
+        const contentContainer = document.getElementById('content-container');
+        if (contentContainer) {
+            contentContainer.innerHTML = `
+                <div class="upgrade-banner">
+                    <div class="banner-icon">🔒</div>
+                    <h3>Fitur Premium Terkunci</h3>
+                    <p>Konten ini hanya tersedia untuk akun Pro.</p>
+                    <button onclick="window.location.href='upgrade.html'" class="btn-upgrade">
+                        Upgrade ke Pro Sekarang
+                    </button>
+                </div>
+            `;
+        }
+        return false; // Akses ditolak
+    }
+    return true; // Akses diizinkan
+}
 }
