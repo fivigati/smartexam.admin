@@ -1,3 +1,8 @@
+// Variabel global untuk menyimpan data sementara
+let currentExams = [];
+let editOldSubject = null; // Penanda apakah sedang mode edit atau tambah baru
+let targetList = [];
+
 // --- 1. INISIALISASI & LOAD DATA ---
 async function loadExams() {
     const user = JSON.parse(localStorage.getItem('smart_exam_user'));
@@ -12,6 +17,7 @@ async function loadExams() {
     });
 
     if (result && result.success) {
+        currentExams = result.data; // Simpan ke variabel global untuk proses edit
         renderExams(result.data);
     } else {
         container.innerHTML = `<div class="col-span-full text-center text-rose-500 p-10">Gagal memuat data.</div>`;
@@ -27,8 +33,8 @@ function renderExams(data) {
     }
 
     container.innerHTML = data.map(ex => {
-        // Status logic
-        const isActive = ex.exam_status === 'active';
+        // Status logic (Mendukung properti 'status' dari backend yang baru diperbaiki)
+        const isActive = (ex.status === 'active' || ex.exam_status === 'active');
         
         return `
         <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all">
@@ -62,7 +68,12 @@ function renderExams(data) {
                     <span class="flex-1 text-center bg-emerald-50 text-emerald-700 py-1.5 rounded-lg border border-emerald-100 text-[10px] font-bold">IN: ${ex.entry_token}</span>
                     <span class="flex-1 text-center bg-rose-50 text-rose-600 py-1.5 rounded-lg border border-rose-100 text-[10px] font-bold">OUT: ${ex.exit_token}</span>
                 </div>
-                <button onclick="hapusUjianBySubject('${ex.subject}')" class="px-3 bg-slate-100 text-slate-600 rounded-lg hover:bg-rose-50 hover:text-rose-600 transition-colors">
+                
+                <button onclick="bukaModalEdit('${ex.subject}')" class="px-3 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors" title="Edit Ujian">
+                    <i data-lucide="edit" class="w-4 h-4"></i>
+                </button>
+
+                <button onclick="hapusUjianBySubject('${ex.subject}')" class="px-3 bg-slate-100 text-slate-600 rounded-lg hover:bg-rose-50 hover:text-rose-600 transition-colors" title="Hapus Ujian">
                     <i data-lucide="trash-2" class="w-4 h-4"></i>
                 </button>
             </div>
@@ -72,12 +83,49 @@ function renderExams(data) {
     lucide.createIcons();
 }
 
-// --- 3. MANAJEMEN TARGET KELAS DI MODAL ---
-let targetList = [];
-
+// --- 3. MANAJEMEN MODAL & TARGET KELAS ---
 function bukaModalJadwal() {
+    editOldSubject = null; // Reset penanda edit (Berarti mode Tambah Baru)
     targetList = [];
     document.getElementById('targetTags').innerHTML = '';
+    
+    // Kosongkan semua input form
+    document.getElementById('examSubject').value = '';
+    document.getElementById('examDate').value = '';
+    document.getElementById('startTime').value = '';
+    document.getElementById('endTime').value = '';
+    if(document.getElementById('examDuration')) document.getElementById('examDuration').value = '';
+    document.getElementById('examLink').value = '';
+    document.getElementById('entryToken').value = '';
+    document.getElementById('exitToken').value = '';
+
+    document.getElementById('modalTambahJadwal').classList.remove('hidden');
+}
+
+// FUNGSI BARU: Buka Modal untuk Edit
+function bukaModalEdit(subject) {
+    const exam = currentExams.find(e => e.subject === subject);
+    if (!exam) return;
+
+    editOldSubject = subject; // Set penanda bahwa kita sedang dalam mode Edit
+
+    // Isi form dengan data ujian saat ini
+    document.getElementById('examSubject').value = exam.subject;
+    document.getElementById('examDate').value = exam.exam_date;
+    document.getElementById('startTime').value = exam.start_time;
+    document.getElementById('endTime').value = exam.end_time;
+    document.getElementById('entryToken').value = exam.entry_token;
+    document.getElementById('exitToken').value = exam.exit_token;
+
+    // Ambil link ujian dari target pertama (karena linknya sama untuk semua target)
+    const link = exam.targets.length > 0 ? exam.targets[0].link : '';
+    document.getElementById('examLink').value = link;
+
+    // Masukkan target kelas ke array
+    targetList = exam.targets.map(t => t.class);
+    renderTags();
+
+    // Buka Modal
     document.getElementById('modalTambahJadwal').classList.remove('hidden');
 }
 
@@ -115,14 +163,17 @@ async function simpanJadwal(e) {
     if(targetList.length === 0) return alert("Tambahkan minimal satu target kelas!");
 
     const user = JSON.parse(localStorage.getItem('smart_exam_user'));
+    
+    // Logika Pintar: Jika editOldSubject ada isinya, maka action 'editExam'. Jika kosong, 'saveExams'
     const payload = {
-        action: 'saveExams',
+        action: editOldSubject ? 'editExam' : 'saveExams',
         school_npsn: user.school_npsn,
+        old_subject: editOldSubject, // Hanya dipakai jika sedang edit
         subject: document.getElementById('examSubject').value,
         exam_date: document.getElementById('examDate').value,
         start_time: document.getElementById('startTime').value,
         end_time: document.getElementById('endTime').value,
-        duration: document.getElementById('examDuration').value,
+        duration: document.getElementById('examDuration') ? document.getElementById('examDuration').value : '',
         exam_link: document.getElementById('examLink').value,
         entry_token: document.getElementById('entryToken').value,
         exit_token: document.getElementById('exitToken').value,
@@ -132,32 +183,30 @@ async function simpanJadwal(e) {
     const res = await apiRequest(payload);
     if(res.success) {
         tutupModalJadwal();
-        loadExams();
+        loadExams(); // Refresh tabel setelah simpan/edit berhasil
     } else {
         alert("Gagal: " + (res.message || 'Terjadi kesalahan'));
     }
 }
 
-async function hapusUjian(id) {
-    if(!confirm("Yakin ingin menghapus jadwal ujian ini?")) return;
+async function hapusUjianBySubject(subject) {
+    if(!confirm(`Yakin ingin menghapus seluruh jadwal untuk ${subject}?`)) return;
     
-    const res = await apiRequest({ action: 'deleteExam', id: id });
+    const user = JSON.parse(localStorage.getItem('smart_exam_user'));
+    
+    // Perbaikan Action: Menggunakan 'deleteExam' sesuai routing di Code.gs
+    const res = await apiRequest({ 
+        action: 'deleteExam', 
+        school_npsn: user.school_npsn,
+        subject: subject 
+    });
+    
     if(res.success) {
-        loadExams();
+        loadExams(); // Refresh
     } else {
         alert("Gagal menghapus jadwal.");
     }
 }
-async function hapusUjianBySubject(subject) {
-    if(!confirm(`Yakin ingin menghapus seluruh jadwal untuk ${subject}?`)) return;
-    
-    // Kirim subject ke backend untuk dihapus massal berdasarkan subject
-    const res = await apiRequest({ action: 'deleteExamBySubject', subject: subject });
-    if(res.success) {
-        loadExams(); // Refresh
-    } else {
-        alert("Gagal menghapus.");
-    }
-}
+
 // Inisialisasi awal
 loadExams();
