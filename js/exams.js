@@ -68,7 +68,7 @@ function renderExams() {
             return {
                 text: "Selesai",
                 weight: 3, // Urutan terakhir (di akhir)
-                class: "bg-slate-50 text-slate-500 border border-slate-200"
+                class: "bg-rose-50 text-rose-600"
             };
         }
     }
