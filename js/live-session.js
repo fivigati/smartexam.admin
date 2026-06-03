@@ -42,8 +42,20 @@ async function loadSessions(showLoading = false) {
   const paginatedData = allSessions.slice(startIndex, startIndex + sessionItemsPerPage);
 
   // --- 3. RENDER DATA ---
-  if (allSessions.length === 0) {
-    table.innerHTML = `<tr><td colspan="6" class="py-16 text-center text-slate-400">Tidak ada sesi aktif</td></tr>`;
+  // Jika Data Kosong
+  if (!result.data || result.data.length === 0) {
+    table.innerHTML = `
+      <tr>
+        <td colspan="6" class="py-20 text-center">
+          <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-50 mb-4 border border-slate-100">
+            <i data-lucide="smartphone-off" class="w-8 h-8 text-slate-400"></i>
+          </div>
+          <p class="text-sm font-bold text-slate-700">Belum ada siswa login</p>
+          <p class="text-xs mt-1 text-slate-400">Tidak ada sesi ujian yang terdeteksi saat ini.</p>
+        </td>
+      </tr>
+    `;
+    lucide.createIcons();
     return;
   }
 
