@@ -46,12 +46,10 @@ async function loadSessions(showLoading = false) {
   if (!result.data || result.data.length === 0) {
     table.innerHTML = `
       <tr>
-        <td colspan="6" class="py-20 text-center">
-          <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-50 mb-4 border border-slate-100">
-            <i data-lucide="smartphone-off" class="w-8 h-8 text-slate-400"></i>
-          </div>
-          <p class="text-sm font-bold text-slate-700">Belum ada siswa login</p>
-          <p class="text-xs mt-1 text-slate-400">Tidak ada sesi ujian yang terdeteksi saat ini.</p>
+        <td colspan="6" class="py-16 text-center text-slate-400">
+          <i data-lucide="monitor-off" class="w-12 h-12 mx-auto mb-3 text-slate-300"></i>
+          <p class="text-sm font-semibold text-slate-600">Tidak ada sesi ujian aktif</p>
+          <p class="text-xs mt-1">Belum ada siswa yang login ke dalam ujian.</p>
         </td>
       </tr>
     `;
