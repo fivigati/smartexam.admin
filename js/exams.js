@@ -1,7 +1,8 @@
-// Variabel global untuk menyimpan data sementara
+// Variabel global
 let currentExams = [];
-let editOldSubject = null; // Penanda apakah sedang mode edit atau tambah baru
+let editOldSubject = null;
 let targetList = [];
+let currentFilter = 'today'; // Default filter: Hari Ini
 
 // --- 1. INISIALISASI & LOAD DATA ---
 async function loadExams() {
@@ -9,7 +10,7 @@ async function loadExams() {
     if (!user || !user.school_npsn) return;
 
     const container = document.getElementById('exams-container');
-    container.innerHTML = `<div class="col-span-full text-center text-slate-400 p-10">Memuat jadwal ujian...</div>`;
+    container.innerHTML = `<tr><td colspan="6" class="text-center text-slate-400 p-10">Memuat data ujian...</td></tr>`;
 
     const result = await apiRequest({
         action: 'getExams',
@@ -17,116 +18,166 @@ async function loadExams() {
     });
 
     if (result && result.success) {
-        currentExams = result.data; // Simpan ke variabel global untuk proses edit
-        renderExams(result.data);
+        currentExams = result.data;
+        renderExams();
     } else {
-        container.innerHTML = `<div class="col-span-full text-center text-rose-500 p-10">Gagal memuat data.</div>`;
+        container.innerHTML = `<tr><td colspan="6" class="text-center text-rose-500 p-10">Gagal memuat data.</td></tr>`;
     }
 }
 
-// --- 2. RENDER UI CARDS ---
-function renderExams(data) {
+// --- 2. RENDER UI TABEL ---
+function renderExams() {
     const container = document.getElementById('exams-container');
-    if (!data || data.length === 0) {
-        container.innerHTML = `<div class="col-span-full p-10 text-center text-slate-400">Belum ada jadwal ujian.</div>`;
+    
+    // Logika Filter
+    let filteredData = currentExams;
+    if (currentFilter === 'today') {
+        const todayStr = new Date().toLocaleDateString('en-CA'); // Format YYYY-MM-DD
+        filteredData = currentExams.filter(e => e.exam_date === todayStr);
+    }
+
+    // Logika Sorting (Paling dekat dengan waktu saat ini di atas)
+    filteredData.sort((a, b) => {
+        const dateA = new Date(a.exam_date + 'T' + a.start_time);
+        const dateB = new Date(b.exam_date + 'T' + b.start_time);
+        return dateA - dateB;
+    });
+
+    // Update Tab UI
+    document.getElementById('tabToday').className = `px-4 py-2 text-sm font-bold rounded-lg transition-colors ${currentFilter === 'today' ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600 border hover:bg-slate-50'}`;
+    document.getElementById('tabAll').className = `px-4 py-2 text-sm font-bold rounded-lg transition-colors ${currentFilter === 'all' ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600 border hover:bg-slate-50'}`;
+
+    if (!filteredData || filteredData.length === 0) {
+        container.innerHTML = `<tr><td colspan="6" class="text-center text-slate-400 p-10 bg-white rounded-b-xl border border-t-0">Tidak ada jadwal ujian ${currentFilter === 'today' ? 'hari ini' : 'tersedia'}.</td></tr>`;
         return;
     }
 
-    container.innerHTML = data.map(ex => {
-        // Status logic (Mendukung properti 'status' dari backend yang baru diperbaiki)
+    container.innerHTML = filteredData.map(ex => {
         const isActive = (ex.status === 'active' || ex.exam_status === 'active');
         
         return `
-        <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all">
-            <div class="flex justify-between items-start mb-4">
-                <div class="flex items-center gap-3">
-                    <div class="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl"><i data-lucide="book-open" class="w-5 h-5"></i></div>
-                    <div>
-                        <h3 class="font-bold text-slate-900">${ex.subject}</h3>
-                        <div class="flex items-center gap-3 text-[10px] text-slate-500 mt-0.5">
-                            <span class="flex items-center gap-1"><i data-lucide="calendar" class="w-3 h-3"></i>${ex.exam_date}</span>
-                            <span class="flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i>${ex.start_time} - ${ex.end_time}</span>
+        <tr class="bg-white border-b border-slate-100 hover:bg-slate-50 transition-colors">
+            <td class="p-4">
+                <input type="checkbox" class="exam-checkbox w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-600" value="${ex.subject}" onchange="updateBulkDeleteBtn()">
+            </td>
+            <td class="p-4">
+                <div class="font-bold text-slate-800">${ex.subject}</div>
+                <div class="mt-1.5 space-y-1">
+                    ${ex.targets.map(t => `
+                        <div class="text-[11px] text-slate-500 flex items-center gap-2">
+                            <span class="font-bold text-slate-700 w-10">${t.class}</span> 
+                            <a href="${t.link}" target="_blank" class="text-indigo-600 font-medium hover:underline flex items-center gap-1">
+                                Link Ujian <i data-lucide="external-link" class="w-3 h-3"></i>
+                            </a>
                         </div>
-                    </div>
+                    `).join('')}
                 </div>
-                <span class="text-[9px] font-bold px-2 py-1 rounded-full ${isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}">
+            </td>
+            <td class="p-4">
+                <div class="flex items-center gap-2 text-sm font-medium text-slate-700">
+                    <i data-lucide="calendar" class="w-4 h-4 text-slate-400"></i> ${ex.exam_date}
+                </div>
+                <div class="flex items-center gap-2 text-xs text-slate-500 mt-1">
+                    <i data-lucide="clock" class="w-3 h-3"></i> ${ex.start_time} - ${ex.end_time}
+                </div>
+            </td>
+            <td class="p-4">
+                <div class="flex flex-col gap-1">
+                    <span class="inline-flex items-center gap-1 px-2 py-1 bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-100 rounded">
+                        IN: ${ex.entry_token}
+                    </span>
+                    <span class="inline-flex items-center gap-1 px-2 py-1 bg-rose-50 text-rose-600 text-[10px] font-bold border border-rose-100 rounded">
+                        OUT: ${ex.exit_token}
+                    </span>
+                </div>
+            </td>
+            <td class="p-4">
+                <span class="px-2.5 py-1 text-[10px] font-bold rounded-full ${isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}">
                     ${isActive ? 'ACTIVE' : 'INACTIVE'}
                 </span>
-            </div>
-
-            <div class="space-y-1.5 mb-5">
-                ${ex.targets.map(t => `
-                    <div class="flex justify-between items-center text-xs bg-slate-50 px-3 py-2 rounded-lg">
-                        <span class="font-bold text-slate-700">${t.class}</span>
-                        <a href="${t.link}" target="_blank" class="text-indigo-600 font-bold hover:underline flex items-center gap-1">Link <i data-lucide="external-link" class="w-3 h-3"></i></a>
-                    </div>
-                `).join('')}
-            </div>
-
-            <div class="flex gap-2">
-                <div class="flex-1 flex gap-1">
-                    <span class="flex-1 text-center bg-emerald-50 text-emerald-700 py-1.5 rounded-lg border border-emerald-100 text-[10px] font-bold">IN: ${ex.entry_token}</span>
-                    <span class="flex-1 text-center bg-rose-50 text-rose-600 py-1.5 rounded-lg border border-rose-100 text-[10px] font-bold">OUT: ${ex.exit_token}</span>
+            </td>
+            <td class="p-4">
+                <div class="flex items-center gap-2">
+                    <button onclick="bukaModalCopy('${ex.subject}')" class="p-2 bg-indigo-50 text-indigo-600 rounded hover:bg-indigo-100" title="Copy (Duplikat Jadwal)">
+                        <i data-lucide="copy" class="w-4 h-4"></i>
+                    </button>
+                    <button onclick="bukaModalEdit('${ex.subject}')" class="p-2 bg-amber-50 text-amber-600 rounded hover:bg-amber-100" title="Edit Ujian">
+                        <i data-lucide="edit" class="w-4 h-4"></i>
+                    </button>
+                    <button onclick="hapusUjianBySubject('${ex.subject}')" class="p-2 bg-rose-50 text-rose-600 rounded hover:bg-rose-100" title="Hapus Ujian">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
                 </div>
-                
-                <button onclick="bukaModalEdit('${ex.subject}')" class="px-3 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors" title="Edit Ujian">
-                    <i data-lucide="edit" class="w-4 h-4"></i>
-                </button>
-
-                <button onclick="hapusUjianBySubject('${ex.subject}')" class="px-3 bg-slate-100 text-slate-600 rounded-lg hover:bg-rose-50 hover:text-rose-600 transition-colors" title="Hapus Ujian">
-                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                </button>
-            </div>
-        </div>
+            </td>
+        </tr>
         `;
     }).join('');
     lucide.createIcons();
+    updateBulkDeleteBtn(); // Reset status tombol hapus massal
 }
 
-// --- 3. MANAJEMEN MODAL & TARGET KELAS ---
+function setFilter(type) {
+    currentFilter = type;
+    renderExams();
+}
+
+// --- 3. MANAJEMEN MODAL, COPY, EDIT ---
 function bukaModalJadwal() {
-    editOldSubject = null; // Reset penanda edit (Berarti mode Tambah Baru)
+    editOldSubject = null;
     targetList = [];
     document.getElementById('targetTags').innerHTML = '';
     
-    // Kosongkan semua input form
     document.getElementById('examSubject').value = '';
     document.getElementById('examDate').value = '';
     document.getElementById('startTime').value = '';
     document.getElementById('endTime').value = '';
-    if(document.getElementById('examDuration')) document.getElementById('examDuration').value = '';
     document.getElementById('examLink').value = '';
     document.getElementById('entryToken').value = '';
     document.getElementById('exitToken').value = '';
 
+    document.getElementById('modalTitle').innerText = "Tambah Jadwal Baru";
     document.getElementById('modalTambahJadwal').classList.remove('hidden');
 }
 
-// FUNGSI BARU: Buka Modal untuk Edit
 function bukaModalEdit(subject) {
     const exam = currentExams.find(e => e.subject === subject);
     if (!exam) return;
 
-    editOldSubject = subject; // Set penanda bahwa kita sedang dalam mode Edit
-
-    // Isi form dengan data ujian saat ini
+    editOldSubject = subject;
     document.getElementById('examSubject').value = exam.subject;
     document.getElementById('examDate').value = exam.exam_date;
     document.getElementById('startTime').value = exam.start_time;
     document.getElementById('endTime').value = exam.end_time;
     document.getElementById('entryToken').value = exam.entry_token;
     document.getElementById('exitToken').value = exam.exit_token;
-
-    // Ambil link ujian dari target pertama (karena linknya sama untuk semua target)
-    const link = exam.targets.length > 0 ? exam.targets[0].link : '';
-    document.getElementById('examLink').value = link;
-
-    // Masukkan target kelas ke array
+    
+    document.getElementById('examLink').value = exam.targets.length > 0 ? exam.targets[0].link : '';
     targetList = exam.targets.map(t => t.class);
     renderTags();
 
-    // Buka Modal
+    document.getElementById('modalTitle').innerText = "Edit Jadwal Ujian";
     document.getElementById('modalTambahJadwal').classList.remove('hidden');
+}
+
+function bukaModalCopy(subject) {
+    const exam = currentExams.find(e => e.subject === subject);
+    if (!exam) return;
+
+    bukaModalJadwal(); // Reset form & edit mode
+    
+    // Isi data duplikat (tambahkan kata Copy agar tidak menimpa jika lupa diubah)
+    document.getElementById('examSubject').value = exam.subject + " (Copy)";
+    document.getElementById('examDate').value = exam.exam_date;
+    document.getElementById('startTime').value = exam.start_time;
+    document.getElementById('endTime').value = exam.end_time;
+    document.getElementById('entryToken').value = exam.entry_token;
+    document.getElementById('exitToken').value = exam.exit_token;
+    
+    document.getElementById('examLink').value = exam.targets.length > 0 ? exam.targets[0].link : '';
+    targetList = [...exam.targets.map(t => t.class)];
+    renderTags();
+
+    document.getElementById('modalTitle').innerText = "Duplikat Jadwal Ujian";
 }
 
 function tutupModalJadwal() {
@@ -157,18 +208,24 @@ function hapusTarget(t) {
     renderTags();
 }
 
-// --- 4. SIMPAN & HAPUS UJIAN ---
+// --- 4. SIMPAN DENGAN EFEK LOADING ---
 async function simpanJadwal(e) {
     e.preventDefault();
     if(targetList.length === 0) return alert("Tambahkan minimal satu target kelas!");
 
-    const user = JSON.parse(localStorage.getItem('smart_exam_user'));
+    const btnSubmit = e.target.querySelector('button[type="submit"]');
+    const originalText = btnSubmit.innerHTML;
     
-    // Logika Pintar: Jika editOldSubject ada isinya, maka action 'editExam'. Jika kosong, 'saveExams'
+    // Set Loading State (Anti-Spam)
+    btnSubmit.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Menyimpan...`;
+    btnSubmit.disabled = true;
+    lucide.createIcons();
+
+    const user = JSON.parse(localStorage.getItem('smart_exam_user'));
     const payload = {
         action: editOldSubject ? 'editExam' : 'saveExams',
         school_npsn: user.school_npsn,
-        old_subject: editOldSubject, // Hanya dipakai jika sedang edit
+        old_subject: editOldSubject,
         subject: document.getElementById('examSubject').value,
         exam_date: document.getElementById('examDate').value,
         start_time: document.getElementById('startTime').value,
@@ -181,30 +238,76 @@ async function simpanJadwal(e) {
     };
 
     const res = await apiRequest(payload);
+    
+    // Kembalikan Tombol
+    btnSubmit.innerHTML = originalText;
+    btnSubmit.disabled = false;
+
     if(res.success) {
         tutupModalJadwal();
-        loadExams(); // Refresh tabel setelah simpan/edit berhasil
+        loadExams(); // Tarik ulang data agar status ArrayFormula terbaca utuh
     } else {
         alert("Gagal: " + (res.message || 'Terjadi kesalahan'));
     }
 }
 
+// --- 5. HAPUS & BULK DELETE DENGAN EFEK LOADING ---
 async function hapusUjianBySubject(subject) {
     if(!confirm(`Yakin ingin menghapus seluruh jadwal untuk ${subject}?`)) return;
     
     const user = JSON.parse(localStorage.getItem('smart_exam_user'));
+    const res = await apiRequest({ action: 'deleteExam', school_npsn: user.school_npsn, subject: subject });
+    if(res.success) loadExams();
+    else alert("Gagal menghapus jadwal.");
+}
+
+function updateBulkDeleteBtn() {
+    const checkboxes = document.querySelectorAll('.exam-checkbox:checked');
+    const btn = document.getElementById('btnBulkDelete');
+    if (btn) {
+        if (checkboxes.length > 0) {
+            btn.classList.remove('hidden');
+            btn.innerHTML = `<i data-lucide="trash-2" class="w-4 h-4 mr-2"></i> Hapus ${checkboxes.length} Jadwal`;
+        } else {
+            btn.classList.add('hidden');
+        }
+        lucide.createIcons();
+    }
+}
+
+function toggleSelectAll(el) {
+    const checkboxes = document.querySelectorAll('.exam-checkbox');
+    checkboxes.forEach(cb => cb.checked = el.checked);
+    updateBulkDeleteBtn();
+}
+
+async function bulkDeleteExams() {
+    const checkboxes = document.querySelectorAll('.exam-checkbox:checked');
+    const subjectsToDelete = Array.from(checkboxes).map(cb => cb.value);
     
-    // Perbaikan Action: Menggunakan 'deleteExam' sesuai routing di Code.gs
+    if(subjectsToDelete.length === 0) return;
+    if(!confirm(`Yakin ingin menghapus ${subjectsToDelete.length} jadwal secara permanen?`)) return;
+
+    const btn = document.getElementById('btnBulkDelete');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin mr-2"></i> Menghapus...`;
+    btn.disabled = true;
+
+    const user = JSON.parse(localStorage.getItem('smart_exam_user'));
     const res = await apiRequest({ 
-        action: 'deleteExam', 
-        school_npsn: user.school_npsn,
-        subject: subject 
+        action: 'deleteBulkExams', 
+        school_npsn: user.school_npsn, 
+        subjects: subjectsToDelete 
     });
-    
+
+    btn.innerHTML = originalText;
+    btn.disabled = false;
+
     if(res.success) {
-        loadExams(); // Refresh
+        document.getElementById('selectAllCb').checked = false; // Uncheck select all
+        loadExams();
     } else {
-        alert("Gagal menghapus jadwal.");
+        alert("Gagal menghapus jadwal massal.");
     }
 }
 
