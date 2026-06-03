@@ -13,21 +13,31 @@ async function loadExams() {
     if (!user || !user.school_npsn) return;
 
     const container = document.getElementById('exams-container');
+    if (!container) return; // Pengaman
+    
     container.innerHTML = `<tr><td colspan="7" class="text-center text-slate-400 p-10">Memuat data ujian...</td></tr>`;
 
-    const result = await apiRequest({ action: 'getExams', school_npsn: user.school_npsn });
+    try {
+        const result = await apiRequest({ action: 'getExams', school_npsn: user.school_npsn });
 
-    if (result && result.success) {
-        currentExams = result.data;
-        renderExams();
-    } else {
-        container.innerHTML = `<tr><td colspan="7" class="text-center text-rose-500 p-10">Gagal memuat data.</td></tr>`;
+        if (result && result.success) {
+            // PENGAMAN 1: Pastikan data yang masuk adalah Array, kalau tidak, jadikan array kosong
+            currentExams = Array.isArray(result.data) ? result.data : [];
+            renderExams();
+        } else {
+            container.innerHTML = `<tr><td colspan="7" class="text-center text-rose-500 p-10">Gagal memuat data.</td></tr>`;
+        }
+    } catch (error) {
+        console.error(error);
+        container.innerHTML = `<tr><td colspan="7" class="text-center text-rose-500 p-10">Terjadi kesalahan pada sistem.</td></tr>`;
     }
 }
 
 // --- 2. RENDER & PAGINATION ---
 function renderExams() {
     const container = document.getElementById('exams-container');
+    if (!container) return; // Pengaman
+    
     let filteredData = [...currentExams];
 
     // Filter Tabs
@@ -36,60 +46,65 @@ function renderExams() {
         filteredData = filteredData.filter(e => e.exam_date === todayStr);
     }
 
-    // Filter Pencarian (Cari berdasarkan Mapel ATAU Kelas)
+    // Filter Pencarian (Cari berdasarkan Mapel ATAU Kelas) - DENGAN PENGAMAN
     if (searchQuery.trim() !== '') {
         const query = searchQuery.toLowerCase();
-        filteredData = filteredData.filter(e => 
-            e.subject.toLowerCase().includes(query) || 
-            String(e.target_class).toLowerCase().includes(query)
-        );
+        filteredData = filteredData.filter(e => {
+            const subjectMatch = e.subject ? String(e.subject).toLowerCase().includes(query) : false;
+            const classMatch = e.target_class ? String(e.target_class).toLowerCase().includes(query) : false;
+            return subjectMatch || classMatch;
+        });
     }
 
     const now = new Date(); 
 
     // Fungsi pembantu untuk menentukan status dan bobot urutan
     function getExamStatusDetails(ex) {
+        // PENGAMAN WAKTU
+        if (!ex.exam_date || !ex.start_time || !ex.end_time) {
+             return { text: "Menunggu", weight: 4, class: "bg-slate-50 text-slate-500 border border-slate-200" };
+        }
+
         const start = new Date(`${ex.exam_date}T${ex.start_time}`);
         const end = new Date(`${ex.exam_date}T${ex.end_time}`);
         
         if (now < start) {
             return {
                 text: "Akan Datang",
-                weight: 2, // Urutan kedua
+                weight: 2, 
                 class: "bg-blue-50 text-blue-600 border border-blue-100"
             };
         } else if (now >= start && now <= end) {
             return {
                 text: "Berlangsung",
-                weight: 1, // Urutan pertama (paling atas)
+                weight: 1, 
                 class: "bg-emerald-50 text-emerald-700 border border-emerald-100"
             };
         } else {
             return {
                 text: "Selesai",
-                weight: 3, // Urutan terakhir (di akhir)
+                weight: 3, 
                 class: "bg-slate-50 text-slate-500 border border-slate-200"
             };
         }
     }
 
-    // Logika Pengurutan: Berdasarkan Status Terlebih Dahulu, Kemudian Waktu Kronologis
+    // Logika Pengurutan
     filteredData.sort((a, b) => {
         const statusA = getExamStatusDetails(a);
         const statusB = getExamStatusDetails(b);
         
-        // Jika status berbeda, urutkan berdasarkan bobot (1: Berlangsung, 2: Akan Datang, 3: Selesai)
         if (statusA.weight !== statusB.weight) {
             return statusA.weight - statusB.weight;
         }
-        
-        // Jika status sama, urutkan berdasarkan waktu pelaksanaan terdekat
         return new Date(a.exam_date + 'T' + a.start_time) - new Date(b.exam_date + 'T' + b.start_time);
     });
 
-    // Update UI Tabs
-    document.getElementById('tabToday').className = `px-4 py-1.5 text-sm font-bold rounded-lg transition-colors shadow-sm ${currentFilter === 'today' ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600 border hover:bg-slate-50'}`;
-    document.getElementById('tabAll').className = `px-4 py-1.5 text-sm font-bold rounded-lg transition-colors shadow-sm ${currentFilter === 'all' ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600 border hover:bg-slate-50'}`;
+    // PENGAMAN: Update UI Tabs (Cek dulu elemennya ada atau tidak sebelum diubah)
+    const tabToday = document.getElementById('tabToday');
+    const tabAll = document.getElementById('tabAll');
+    if (tabToday) tabToday.className = `px-4 py-1.5 text-sm font-bold rounded-lg transition-colors shadow-sm ${currentFilter === 'today' ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600 border hover:bg-slate-50'}`;
+    if (tabAll) tabAll.className = `px-4 py-1.5 text-sm font-bold rounded-lg transition-colors shadow-sm ${currentFilter === 'all' ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600 border hover:bg-slate-50'}`;
 
     // Pagination Logic
     const totalItems = filteredData.length;
@@ -100,9 +115,10 @@ function renderExams() {
     const endIndex = startIndex + examItemsPerPage;
     const paginatedData = filteredData.slice(startIndex, endIndex);
 
-    // Update Info Pagination
+    // PENGAMAN: Update Info Pagination
     const infoText = totalItems === 0 ? "Tidak ada jadwal" : `Menampilkan ${startIndex + 1} - ${Math.min(endIndex, totalItems)} dari ${totalItems} jadwal`;
-    document.getElementById('examPaginationInfo').innerText = infoText;
+    const pagInfo = document.getElementById('examPaginationInfo');
+    if (pagInfo) pagInfo.innerText = infoText;
 
     if (paginatedData.length === 0) {
         container.innerHTML = `<tr><td colspan="7" class="text-center text-slate-400 p-10 bg-white">Tidak ada jadwal ujian yang ditemukan.</td></tr>`;
@@ -110,7 +126,6 @@ function renderExams() {
         return;
     }
 
-    // Fungsi pembantu untuk mengubah format tanggal YYYY-MM-DD menjadi DD-MM-YYYY
     function formatTanggalIndo(dateStr) {
         if (!dateStr || !dateStr.includes('-')) return dateStr;
         const [year, month, day] = dateStr.split('-');
@@ -170,27 +185,39 @@ function renderExams() {
         `;
     }).join('');
     
-    lucide.createIcons();
+    if (typeof lucide !== 'undefined') lucide.createIcons();
     updateBulkDeleteBtn();
 }
 
 function setFilter(type) { currentFilter = type; currentExamPage = 1; renderExams(); }
-function setSearchFilter() { searchQuery = document.getElementById('searchExamInput').value; currentExamPage = 1; renderExams(); }
+function setSearchFilter() { 
+    const searchInput = document.getElementById('searchExamInput');
+    if(searchInput) {
+        searchQuery = searchInput.value; 
+        currentExamPage = 1; 
+        renderExams(); 
+    }
+}
 function changeExamPage(dir) { currentExamPage += dir; renderExams(); }
 
 // --- 3. MANAJEMEN MODAL ---
 function clearForm() {
     ['examSubject', 'targetClass', 'examDate', 'startTime', 'endTime', 'examDuration', 'examLink', 'entryToken', 'exitToken'].forEach(id => {
-        document.getElementById(id).value = '';
+        const el = document.getElementById(id);
+        if(el) el.value = '';
     });
 }
 
 function bukaModalJadwal() {
     editExamId = null;
     clearForm();
-    document.getElementById('modalTitle').innerHTML = `<i data-lucide="calendar-plus" class="w-5 h-5 text-indigo-600"></i> Tambah Jadwal Baru`;
-    document.getElementById('modalTambahJadwal').classList.remove('hidden');
-    lucide.createIcons();
+    const titleEl = document.getElementById('modalTitle');
+    if (titleEl) titleEl.innerHTML = `<i data-lucide="calendar-plus" class="w-5 h-5 text-indigo-600"></i> Tambah Jadwal Baru`;
+    
+    const modalEl = document.getElementById('modalTambahJadwal');
+    if (modalEl) modalEl.classList.remove('hidden');
+    
+    if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
 function bukaModalEdit(id) {
@@ -198,80 +225,97 @@ function bukaModalEdit(id) {
     if (!exam) return;
     editExamId = id;
     
-    document.getElementById('examSubject').value = exam.subject;
-    document.getElementById('targetClass').value = exam.target_class;
-    document.getElementById('examDate').value = exam.exam_date;
-    document.getElementById('startTime').value = exam.start_time;
-    document.getElementById('endTime').value = exam.end_time;
-    document.getElementById('examDuration').value = exam.duration;
-    document.getElementById('examLink').value = exam.exam_link;
-    document.getElementById('entryToken').value = exam.entry_token;
-    document.getElementById('exitToken').value = exam.exit_token;
+    if(document.getElementById('examSubject')) document.getElementById('examSubject').value = exam.subject || '';
+    if(document.getElementById('targetClass')) document.getElementById('targetClass').value = exam.target_class || '';
+    if(document.getElementById('examDate')) document.getElementById('examDate').value = exam.exam_date || '';
+    if(document.getElementById('startTime')) document.getElementById('startTime').value = exam.start_time || '';
+    if(document.getElementById('endTime')) document.getElementById('endTime').value = exam.end_time || '';
+    if(document.getElementById('examDuration')) document.getElementById('examDuration').value = exam.duration || '';
+    if(document.getElementById('examLink')) document.getElementById('examLink').value = exam.exam_link || '';
+    if(document.getElementById('entryToken')) document.getElementById('entryToken').value = exam.entry_token || '';
+    if(document.getElementById('exitToken')) document.getElementById('exitToken').value = exam.exit_token || '';
 
-    document.getElementById('modalTitle').innerHTML = `<i data-lucide="edit" class="w-5 h-5 text-amber-500"></i> Edit Jadwal`;
-    document.getElementById('modalTambahJadwal').classList.remove('hidden');
-    lucide.createIcons();
+    const titleEl = document.getElementById('modalTitle');
+    if (titleEl) titleEl.innerHTML = `<i data-lucide="edit" class="w-5 h-5 text-amber-500"></i> Edit Jadwal`;
+    
+    const modalEl = document.getElementById('modalTambahJadwal');
+    if (modalEl) modalEl.classList.remove('hidden');
+    
+    if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
 function bukaModalCopy(id) {
     const exam = currentExams.find(e => e.id === id);
     if (!exam) return;
-    editExamId = null; // Menjadi mode Tambah Baru (bukan Edit)
+    editExamId = null; 
     
-    document.getElementById('examSubject').value = exam.subject;
-    document.getElementById('targetClass').value = exam.target_class + " (Copy)";
-    document.getElementById('examDate').value = exam.exam_date;
-    document.getElementById('startTime').value = exam.start_time;
-    document.getElementById('endTime').value = exam.end_time;
-    document.getElementById('examDuration').value = exam.duration;
-    document.getElementById('examLink').value = ''; // Link dikosongkan agar diisi yang baru
-    document.getElementById('entryToken').value = exam.entry_token;
-    document.getElementById('exitToken').value = exam.exit_token;
+    if(document.getElementById('examSubject')) document.getElementById('examSubject').value = exam.subject || '';
+    if(document.getElementById('targetClass')) document.getElementById('targetClass').value = (exam.target_class || '') + " (Copy)";
+    if(document.getElementById('examDate')) document.getElementById('examDate').value = exam.exam_date || '';
+    if(document.getElementById('startTime')) document.getElementById('startTime').value = exam.start_time || '';
+    if(document.getElementById('endTime')) document.getElementById('endTime').value = exam.end_time || '';
+    if(document.getElementById('examDuration')) document.getElementById('examDuration').value = exam.duration || '';
+    if(document.getElementById('examLink')) document.getElementById('examLink').value = ''; 
+    if(document.getElementById('entryToken')) document.getElementById('entryToken').value = exam.entry_token || '';
+    if(document.getElementById('exitToken')) document.getElementById('exitToken').value = exam.exit_token || '';
 
-    document.getElementById('modalTitle').innerHTML = `<i data-lucide="copy" class="w-5 h-5 text-indigo-600"></i> Duplikat Jadwal`;
-    document.getElementById('modalTambahJadwal').classList.remove('hidden');
-    lucide.createIcons();
+    const titleEl = document.getElementById('modalTitle');
+    if (titleEl) titleEl.innerHTML = `<i data-lucide="copy" class="w-5 h-5 text-indigo-600"></i> Duplikat Jadwal`;
+    
+    const modalEl = document.getElementById('modalTambahJadwal');
+    if (modalEl) modalEl.classList.remove('hidden');
+    
+    if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
 function tutupModalJadwal() {
-    document.getElementById('modalTambahJadwal').classList.add('hidden');
+    const modalEl = document.getElementById('modalTambahJadwal');
+    if (modalEl) modalEl.classList.add('hidden');
 }
 
 // --- 4. SIMPAN & HAPUS ---
 async function simpanJadwal(e) {
     e.preventDefault();
     const btnSubmit = document.getElementById('btnSubmitJadwal');
+    if (!btnSubmit) return;
+    
     const originalText = btnSubmit.innerHTML;
     
     btnSubmit.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Menyimpan...`;
     btnSubmit.disabled = true;
-    lucide.createIcons();
+    if (typeof lucide !== 'undefined') lucide.createIcons();
 
     const user = JSON.parse(localStorage.getItem('smart_exam_user'));
     const payload = {
         action: editExamId ? 'editExam' : 'saveExams',
         school_npsn: user.school_npsn,
         id: editExamId,
-        subject: document.getElementById('examSubject').value,
-        target_class: document.getElementById('targetClass').value,
-        exam_date: document.getElementById('examDate').value,
-        start_time: document.getElementById('startTime').value,
-        end_time: document.getElementById('endTime').value,
-        duration: document.getElementById('examDuration').value,
-        exam_link: document.getElementById('examLink').value,
-        entry_token: document.getElementById('entryToken').value,
-        exit_token: document.getElementById('exitToken').value
+        subject: document.getElementById('examSubject') ? document.getElementById('examSubject').value : '',
+        target_class: document.getElementById('targetClass') ? document.getElementById('targetClass').value : '',
+        exam_date: document.getElementById('examDate') ? document.getElementById('examDate').value : '',
+        start_time: document.getElementById('startTime') ? document.getElementById('startTime').value : '',
+        end_time: document.getElementById('endTime') ? document.getElementById('endTime').value : '',
+        duration: document.getElementById('examDuration') ? document.getElementById('examDuration').value : '',
+        exam_link: document.getElementById('examLink') ? document.getElementById('examLink').value : '',
+        entry_token: document.getElementById('entryToken') ? document.getElementById('entryToken').value : '',
+        exit_token: document.getElementById('exitToken') ? document.getElementById('exitToken').value : ''
     };
 
-    const res = await apiRequest(payload);
-    btnSubmit.innerHTML = originalText;
-    btnSubmit.disabled = false;
+    try {
+        const res = await apiRequest(payload);
+        btnSubmit.innerHTML = originalText;
+        btnSubmit.disabled = false;
 
-    if(res.success) {
-        tutupModalJadwal();
-        loadExams();
-    } else {
-        alert("Gagal: " + (res.message || 'Terjadi kesalahan'));
+        if(res && res.success) {
+            tutupModalJadwal();
+            loadExams();
+        } else {
+            alert("Gagal: " + (res ? res.message : 'Terjadi kesalahan'));
+        }
+    } catch(err) {
+        btnSubmit.innerHTML = originalText;
+        btnSubmit.disabled = false;
+        alert("Gagal terhubung ke server.");
     }
 }
 
@@ -279,17 +323,19 @@ async function hapusUjian(id) {
     if(!confirm(`Yakin ingin menghapus jadwal ini?`)) return;
     const user = JSON.parse(localStorage.getItem('smart_exam_user'));
     const res = await apiRequest({ action: 'deleteExam', school_npsn: user.school_npsn, id: id });
-    if(res.success) loadExams();
+    if(res && res.success) loadExams();
     else alert("Gagal menghapus jadwal.");
 }
 
 function updateBulkDeleteBtn() {
     const checkboxes = document.querySelectorAll('.exam-checkbox:checked');
     const btn = document.getElementById('btnBulkDelete');
+    const txt = document.getElementById('textBulkDelete');
+    
     if (btn) {
         if (checkboxes.length > 0) {
             btn.classList.remove('hidden');
-            document.getElementById('textBulkDelete').innerText = `Hapus (${checkboxes.length})`;
+            if(txt) txt.innerText = `Hapus (${checkboxes.length})`;
         } else {
             btn.classList.add('hidden');
         }
@@ -310,6 +356,7 @@ async function bulkDeleteExams() {
     if(!confirm(`Yakin ingin menghapus ${idsToDelete.length} jadwal secara permanen?`)) return;
 
     const btn = document.getElementById('btnBulkDelete');
+    if (!btn) return;
     const originalText = btn.innerHTML;
     btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin mr-2"></i> Menghapus...`;
     btn.disabled = true;
@@ -320,8 +367,9 @@ async function bulkDeleteExams() {
     btn.innerHTML = originalText;
     btn.disabled = false;
 
-    if(res.success) {
-        document.getElementById('selectAllCb').checked = false;
+    if(res && res.success) {
+        const checkAll = document.getElementById('selectAllCb');
+        if(checkAll) checkAll.checked = false;
         loadExams();
     } else {
         alert("Gagal menghapus jadwal massal.");
