@@ -1,5 +1,7 @@
 // Variable global untuk diffing (mencegah tabel berkedip)
 let lastSessionsDataHash = "";
+let currentSessionPage = 1;
+const sessionItemsPerPage = 30; // 30 siswa per halaman
 
 async function loadSessions(showLoading = false) {
   const user = JSON.parse(localStorage.getItem('smart_exam_user'));
@@ -8,101 +10,85 @@ async function loadSessions(showLoading = false) {
   const table = document.getElementById('sessionTable');
   if (!table) return;
 
-  // Tampilkan loading HANYA saat pertama kali / dipaksa
   if (showLoading) {
     lastSessionsDataHash = ""; 
     table.innerHTML = `<tr><td colspan="6" class="py-16 text-center"><div class="flex flex-col items-center justify-center text-slate-400 animate-pulse"><i data-lucide="loader-circle" class="w-10 h-10 mb-2 animate-spin text-indigo-500"></i><p class="text-sm font-medium">Sedang memantau sesi...</p></div></td></tr>`;
     lucide.createIcons();
   }
 
-  // --- CEK PLAN: TAMPILKAN BANNER JIKA BUKAN PREMIUM ---
+  // Cek Plan
   if (user.plan_type && user.plan_type.toLowerCase().trim() !== 'premium') {
-    table.innerHTML = `
-      <tr>
-        <td colspan="6" class="py-16 text-center">
-          <div class="flex flex-col items-center justify-center p-8 text-center bg-slate-50 border-2 border-dashed border-slate-200 rounded-xl mx-4">
-            <div class="text-5xl mb-3">🔒</div>
-            <h3 class="text-lg font-bold text-slate-800">Fitur Premium Terkunci</h3>
-            <p class="text-sm text-slate-500 max-w-sm mt-2">Data sesi langsung secara real-time hanya tersedia untuk akun Pro. Silakan upgrade untuk membuka akses.</p>
-          </div>
-        </td>
-      </tr>
-    `;
+    table.innerHTML = `<tr><td colspan="6" class="py-16 text-center">Fitur Premium Terkunci</td></tr>`;
     return; 
   }
 
-  // Ambil Data dari API
-  const result = await apiRequest({
-    action: 'getLiveSessions',
-    school_npsn: user.school_npsn
-  });
-
+  const result = await apiRequest({ action: 'getLiveSessions', school_npsn: user.school_npsn });
   if (!result.success) return;
 
-  // --- OPTIMASI ANTI KEDIP (DATA DIFFING) ---
+  // --- 1. OPTIMASI ANTI KEDIP (Pindahkan ke sini, SEBELUM render) ---
   const currentDataHash = JSON.stringify(result.data);
-  if (!showLoading && currentDataHash === lastSessionsDataHash) {
-    return; // Berhenti jika data masih sama (tidak ada perubahan dari server)
-  }
+  if (!showLoading && currentDataHash === lastSessionsDataHash) return; 
   lastSessionsDataHash = currentDataHash;
 
-  // Jika Data Kosong
-  if (!result.data || result.data.length === 0) {
-    table.innerHTML = `
-      <tr>
-        <td colspan="6" class="py-16 text-center text-slate-400">
-          <i data-lucide="monitor-off" class="w-12 h-12 mx-auto mb-3 text-slate-300"></i>
-          <p class="text-sm font-semibold text-slate-600">Tidak ada sesi ujian aktif</p>
-          <p class="text-xs mt-1">Belum ada siswa yang login ke dalam ujian.</p>
-        </td>
-      </tr>
-    `;
-    lucide.createIcons();
+  // --- 2. PAGINATION LOGIC ---
+  const allSessions = result.data || [];
+  const totalItems = allSessions.length;
+  const totalPages = Math.ceil(totalItems / sessionItemsPerPage) || 1;
+  
+  if (currentSessionPage > totalPages) currentSessionPage = totalPages;
+  if (currentSessionPage < 1) currentSessionPage = 1;
+  
+  const startIndex = (currentSessionPage - 1) * sessionItemsPerPage;
+  const paginatedData = allSessions.slice(startIndex, startIndex + sessionItemsPerPage);
+
+  // --- 3. RENDER DATA ---
+  if (allSessions.length === 0) {
+    table.innerHTML = `<tr><td colspan="6" class="py-16 text-center text-slate-400">Tidak ada sesi aktif</td></tr>`;
     return;
   }
 
-  // --- RENDER DATA DENGAN BUFFER ---
   let tableContent = '';
-  result.data.forEach(session => {
-    const nisn = session.student_nisn || session.id;
+  paginatedData.forEach(session => {
     tableContent += `
       <tr class="hover:bg-slate-50 transition-all border-b border-slate-100">
         <td class="px-6 py-4">
           <p class="text-sm font-semibold text-slate-800">${session.student_name}</p>
           <p class="text-xs text-slate-400">${session.student_class} • ${session.student_room}</p>
         </td>
-        
-        <td class="px-6 py-4 text-sm text-slate-600 font-medium">
-          ${session.subject_name || session.exam_id || '-'}
-        </td>
-
-        <td class="px-6 py-4">
-          ${renderStatus(session.last_status || session.last_session)}
-        </td>
-
+        <td class="px-6 py-4 text-sm text-slate-600 font-medium">${session.subject_name || session.exam_id || '-'}</td>
+        <td class="px-6 py-4">${renderStatus(session.last_status || session.last_session)}</td>
         <td class="px-6 py-4 text-sm text-slate-600">
           <div class="flex items-center gap-2">
             <i data-lucide="smartphone" class="w-4 h-4 text-slate-400"></i>
             <span>${parseDeviceInfo(session.device_info)}</span>
           </div>
         </td>
-
-        <td class="px-6 py-4 text-xs text-slate-500">
-          ${formatLastSeen(session.last_seen)}
-        </td>
-
+        <td class="px-6 py-4 text-xs text-slate-500">${formatLastSeen(session.last_seen)}</td>
         <td class="px-6 py-4 text-center">
-          <button onclick="deleteSession('${session.student_nisn}')" class="rounded-lg bg-red-50 px-4 py-2 text-xs font-semibold text-red-600 hover:bg-red-100 transition-all">
-            Reset
-          </button>
+          <button onclick="deleteSession('${session.student_nisn}')" class="rounded-lg bg-red-50 px-4 py-2 text-xs font-semibold text-red-600 hover:bg-red-100 transition-all">Reset</button>
         </td>
       </tr>
     `;
   });
 
+  // --- 4. TAMBAHKAN KONTROL PAGINATION ---
+  tableContent += `
+    <tr>
+      <td colspan="6" class="px-6 py-4 bg-slate-50 border-t border-slate-100">
+        <div class="flex items-center justify-between text-xs text-slate-500">
+          <span>Halaman ${currentSessionPage} dari ${totalPages} (${totalItems} total)</span>
+          <div class="flex gap-2">
+            <button onclick="changeSessionPage(-1)" ${currentSessionPage === 1 ? 'disabled' : ''} class="px-3 py-1 bg-white border rounded shadow-sm disabled:opacity-50">Prev</button>
+            <button onclick="changeSessionPage(1)" ${currentSessionPage === totalPages ? 'disabled' : ''} class="px-3 py-1 bg-white border rounded shadow-sm disabled:opacity-50">Next</button>
+          </div>
+        </div>
+      </td>
+    </tr>
+  `;
+
   table.innerHTML = tableContent;
   lucide.createIcons();
-  universalFilterSession(); // Jalankan filter jika sedang ada pencarian
+  universalFilterSession();
 }
 
 // ==========================================
@@ -232,6 +218,12 @@ async function deleteAllSessions() {
   await apiRequest({ action: 'deleteAllSessions', school_npsn: user.school_npsn });
   loadSessions(true);
 }
+
+function changeSessionPage(dir) {
+  currentSessionPage += dir;
+  loadSessions(false); // Render ulang tanpa loading animasi
+}
+  
 // ==========================================
 // INISIALISASI & AUTO-REFRESH
 // ==========================================
