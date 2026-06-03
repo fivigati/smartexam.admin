@@ -6,6 +6,8 @@ if (dateFilter) {
     loadViolations(true); 
   });
 }
+let currentViolationPage = 1;
+const violationItemsPerPage = 30; // 30 data per halaman
 
 // OPTIMASI 1: Variabel global untuk menyimpan state data terakhir
 // Tujuannya agar kita tidak me-render ulang tabel jika data dari server tidak berubah
@@ -83,6 +85,16 @@ async function loadViolations(showLoading = false) {
   }
 
   // --- RENDER DATA ---
+  // 1. Pagination Logic
+  const allViolations = result.data || [];
+  const totalItems = allViolations.length;
+  const totalPages = Math.ceil(totalItems / violationItemsPerPage) || 1;
+
+  if (currentViolationPage > totalPages) currentViolationPage = totalPages;
+  if (currentViolationPage < 1) currentViolationPage = 1;
+
+  const startIndex = (currentViolationPage - 1) * violationItemsPerPage;
+  const paginatedData = allViolations.slice(startIndex, startIndex + violationItemsPerPage);
   // OPTIMASI 4: Gunakan String Buffer untuk mengumpulkan HTML
   let tableContent = '';
   result.data.forEach(v => {
@@ -108,7 +120,23 @@ async function loadViolations(showLoading = false) {
       </tr>
     `;
   });
-  
+  // 3. Tambahkan Navigasi Pagination di bawah tabel
+  tableContent += `
+    <tr>
+      <td colspan="5" class="px-6 py-4 bg-slate-50 border-t border-slate-100">
+        <div class="flex items-center justify-between text-xs text-slate-500">
+          <span>Halaman ${currentViolationPage} dari ${totalPages} (${totalItems} total data)</span>
+          <div class="flex gap-2">
+            <button onclick="changeViolationPage(-1)" ${currentViolationPage === 1 ? 'disabled' : ''} 
+              class="px-3 py-1 bg-white border rounded shadow-sm disabled:opacity-50">Prev</button>
+            <button onclick="changeViolationPage(1)" ${currentViolationPage === totalPages ? 'disabled' : ''} 
+              class="px-3 py-1 bg-white border rounded shadow-sm disabled:opacity-50">Next</button>
+          </div>
+        </div>
+      </td>
+    </tr>
+  `;
+
   // Terapkan ke tabel 1 KALI SAJA
   table.innerHTML = tableContent;
   
@@ -275,6 +303,10 @@ function universalFilter() {
     noDataRow.innerHTML = `<td colspan="5" class="py-10 text-center text-slate-400 text-sm">Data tidak ditemukan</td>`;
     table.appendChild(noDataRow);
   }
+}
+function changeViolationPage(dir) {
+  currentViolationPage += dir;
+  loadViolations(false);
 }
 
 // --- INTERVAL ---
