@@ -247,9 +247,23 @@ async function hapusSiswa(nisn) {
 
 async function bukaBlokir(nisn, namaSiswa) {
     if (!confirm(`Aktifkan akun dan hapus seluruh sesi pelanggaran untuk ${namaSiswa}?`)) return;
+    
     const user = JSON.parse(localStorage.getItem('smart_exam_user'));
-    const result = await apiRequest({ action: 'resetViolationStudent', student_nisn: nisn, school_npsn: user.school_npsn });
-    if (result && result.success) loadDataSiswa(); 
+    
+    // Tampilkan indikator loading atau beri feedback visual jika perlu
+    const result = await apiRequest({ 
+        action: 'resetViolationStudent', 
+        student_nisn: nisn, 
+        school_npsn: user.school_npsn 
+    });
+
+    if (result && result.success) {
+        // PENTING: Panggil loadDataSiswa untuk memperbarui tampilan tabel
+        await loadDataSiswa();
+        alert("Siswa berhasil diaktifkan kembali.");
+    } else {
+        alert("Gagal mengaktifkan siswa: " + (result?.message || 'Error server'));
+    }
 }
 
 // Hapus filter/semua yang tertampil (fungsi bawaan lama)
