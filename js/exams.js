@@ -3,6 +3,7 @@ let currentExams = [];
 let editOldSubject = null;
 let targetList = [];
 let currentFilter = 'today'; // Default filter: Hari Ini
+let searchQuery = '';
 
 // --- 1. INISIALISASI & LOAD DATA ---
 async function loadExams() {
@@ -29,26 +30,42 @@ async function loadExams() {
 function renderExams() {
     const container = document.getElementById('exams-container');
     
-    // Logika Filter
-    let filteredData = currentExams;
+    // 1. Buat salinan data agar data asli (currentExams) tidak rusak saat di-sort
+    let filteredData = [...currentExams];
+
+    // 2. Logika Filter Tabs (Hari Ini / Semua)
     if (currentFilter === 'today') {
         const todayStr = new Date().toLocaleDateString('en-CA'); // Format YYYY-MM-DD
-        filteredData = currentExams.filter(e => e.exam_date === todayStr);
+        filteredData = filteredData.filter(e => e.exam_date === todayStr);
     }
 
-    // Logika Sorting (Paling dekat dengan waktu saat ini di atas)
+    // 3. Logika Pencarian (Search)
+    if (searchQuery.trim() !== '') {
+        const query = searchQuery.toLowerCase();
+        filteredData = filteredData.filter(e => 
+            e.subject.toLowerCase().includes(query)
+        );
+    }
+
+    // 4. Logika Sorting (Paling dekat dengan waktu saat ini ditaruh di atas)
     filteredData.sort((a, b) => {
         const dateA = new Date(a.exam_date + 'T' + a.start_time);
         const dateB = new Date(b.exam_date + 'T' + b.start_time);
         return dateA - dateB;
     });
 
-    // Update Tab UI
-    document.getElementById('tabToday').className = `px-4 py-2 text-sm font-bold rounded-lg transition-colors ${currentFilter === 'today' ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600 border hover:bg-slate-50'}`;
-    document.getElementById('tabAll').className = `px-4 py-2 text-sm font-bold rounded-lg transition-colors ${currentFilter === 'all' ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600 border hover:bg-slate-50'}`;
+    // --- UPDATE UI TAB FILTER ---
+    const tabToday = document.getElementById('tabToday');
+    const tabAll = document.getElementById('tabAll');
+    if(tabToday && tabAll) {
+        tabToday.className = `px-4 py-1.5 text-sm font-bold rounded-lg transition-colors shadow-sm ${currentFilter === 'today' ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600 border hover:bg-slate-50'}`;
+        tabAll.className = `px-4 py-1.5 text-sm font-bold rounded-lg transition-colors shadow-sm ${currentFilter === 'all' ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600 border hover:bg-slate-50'}`;
+    }
 
+    // --- RENDER DATA KE TABEL ---
     if (!filteredData || filteredData.length === 0) {
-        container.innerHTML = `<tr><td colspan="6" class="text-center text-slate-400 p-10 bg-white rounded-b-xl border border-t-0">Tidak ada jadwal ujian ${currentFilter === 'today' ? 'hari ini' : 'tersedia'}.</td></tr>`;
+        container.innerHTML = `<tr><td colspan="6" class="text-center text-slate-400 p-10 bg-white">Tidak ada jadwal ujian yang ditemukan.</td></tr>`;
+        updateBulkDeleteBtn(); // Sembunyikan tombol hapus jika kosong
         return;
     }
 
@@ -112,8 +129,9 @@ function renderExams() {
         </tr>
         `;
     }).join('');
+    
     lucide.createIcons();
-    updateBulkDeleteBtn(); // Reset status tombol hapus massal
+    updateBulkDeleteBtn(); // Reset status tombol hapus massal agar tidak tertinggal aktif
 }
 
 function setFilter(type) {
@@ -309,6 +327,11 @@ async function bulkDeleteExams() {
     } else {
         alert("Gagal menghapus jadwal massal.");
     }
+}
+
+function setSearchFilter() {
+    searchQuery = document.getElementById('searchExamInput').value.toLowerCase();
+    renderExams();
 }
 
 // Inisialisasi awal
