@@ -64,6 +64,7 @@ async function loadSessions(showLoading = false) {
   // --- RENDER DATA DENGAN BUFFER ---
   let tableContent = '';
   result.data.forEach(session => {
+    const nisn = session.student_nisn || session.id;
     tableContent += `
       <tr class="hover:bg-slate-50 transition-all border-b border-slate-100">
         <td class="px-6 py-4">
@@ -76,7 +77,6 @@ async function loadSessions(showLoading = false) {
         </td>
 
         <td class="px-6 py-4">
-          <!-- HANYA MENAMPILKAN LAST STATUS SESUAI PERMINTAAN -->
           ${renderStatus(session.last_status || session.last_session)}
         </td>
 
@@ -92,7 +92,7 @@ async function loadSessions(showLoading = false) {
         </td>
 
         <td class="px-6 py-4 text-center">
-          <button onclick="deleteSession('${session.id}')" class="rounded-lg bg-red-50 px-4 py-2 text-xs font-semibold text-red-600 hover:bg-red-100 transition-all">
+          <button onclick="deleteSession('${session.student_nisn}')" class="rounded-lg bg-red-50 px-4 py-2 text-xs font-semibold text-red-600 hover:bg-red-100 transition-all">
             Reset
           </button>
         </td>
@@ -206,14 +206,23 @@ function universalFilterSession() {
 // ==========================================
 // FUNGSI AKSI API
 // ==========================================
-async function deleteSession(nisn, name) {
-  // Tambahkan konfirmasi nama agar admin yakin tidak salah klik
-  if (!confirm(`Peringatan: Mereset sesi akan membuat ${name} (NISN: ${nisn}) ter-logout dan harus login kembali. Lanjutkan?`)) return;
+async function deleteSession(nisn) { 
+  if (!confirm(`Yakin ingin mereset sesi siswa NISN: ${nisn}?`)) return;
 
   const user = JSON.parse(localStorage.getItem('smart_exam_user'));
-  // Kirim student_nisn ke backend (pastikan backend menangkap parameter ini)
-  await apiRequest({ action: 'deleteSession', student_nisn: nisn, school_npsn: user.school_npsn });
-  loadSessions(true);
+  
+  // Mengirim student_nisn agar cocok dengan backend
+  const res = await apiRequest({ 
+    action: 'deleteSession', 
+    student_nisn: nisn, 
+    school_npsn: user.school_npsn 
+  });
+
+  if (res && res.success) {
+    loadSessions(true); 
+  } else {
+    alert("Gagal mereset: " + (res.message || "Error tidak diketahui"));
+  }
 }
 
 async function deleteAllSessions() {
