@@ -542,28 +542,22 @@
   </div>
         
 <div id="view-exams" class="page-view hidden">
-  
   <div class="mb-6 flex flex-col md:flex-row justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-    
     <div class="flex flex-1 flex-wrap gap-3">
-      <div class="relative min-w-[200px] flex-1 md:flex-none">
+      <div class="relative min-w-[240px] flex-1 md:flex-none">
         <i data-lucide="search" class="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400"></i>
-        <input type="text" id="searchExamInput" oninput="setSearchFilter()" placeholder="Cari mata pelajaran..." 
+        <input type="text" id="searchExamInput" oninput="setSearchFilter()" placeholder="Cari mapel atau kelas..." 
           class="w-full rounded-xl border border-slate-200 pl-10 pr-4 py-2.5 text-sm text-slate-700 outline-none transition-all focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
       </div>
-      
       <div class="flex gap-1 bg-slate-100 p-1 rounded-xl">
         <button id="tabToday" onclick="setFilter('today')" class="px-4 py-1.5 text-sm font-bold rounded-lg transition-colors bg-indigo-600 text-white shadow-sm">Hari Ini</button>
         <button id="tabAll" onclick="setFilter('all')" class="px-4 py-1.5 text-sm font-bold rounded-lg transition-colors text-slate-600 hover:bg-slate-200">Semua Jadwal</button>
       </div>
     </div>
-
     <div class="flex flex-wrap items-center gap-3">
       <button id="btnBulkDelete" onclick="bulkDeleteExams()" class="hidden items-center gap-2 rounded-xl bg-rose-500 px-5 py-2.5 text-sm font-bold text-white transition-all hover:bg-rose-600 shadow-sm hover:shadow-md hover:-translate-y-0.5">
-        <i data-lucide="trash-2" class="h-4 w-4"></i>
-        <span>Hapus Terpilih</span>
+        <i data-lucide="trash-2" class="h-4 w-4"></i><span id="textBulkDelete">Hapus</span>
       </button>
-
       <button onclick="bukaModalJadwal()" class="flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white transition-all hover:bg-indigo-700 shadow-sm hover:-translate-y-0.5">
         <i data-lucide="calendar-plus" class="w-4 h-4"></i> Buat Jadwal
       </button>
@@ -575,19 +569,25 @@
       <table class="min-w-full">
         <thead class="bg-slate-50/80">
           <tr class="border-b border-slate-200">
-            <th class="px-4 py-3 w-10 text-center">
-              <input type="checkbox" id="selectAllCb" onchange="toggleSelectAll(this)" class="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
-            </th>
-            <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Info Ujian & Target</th>
-            <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Waktu Pelaksanaan</th>
-            <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Token</th>
-            <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Status</th>
-            <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Aksi</th>
+            <th class="px-4 py-3 w-10 text-center"><input type="checkbox" id="selectAllCb" onchange="toggleSelectAll(this)" class="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"></th>
+            <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Mata Pelajaran & Kelas</th>
+            <th class="px-4 py-3 text-center text-xs font-bold uppercase tracking-wider text-slate-500">Pelaksanaan</th>
+            <th class="px-4 py-3 text-center text-xs font-bold uppercase tracking-wider text-slate-500">Durasi</th>
+            <th class="px-4 py-3 text-center text-xs font-bold uppercase tracking-wider text-slate-500">Token</th>
+            <th class="px-4 py-3 text-center text-xs font-bold uppercase tracking-wider text-slate-500">Status</th>
+            <th class="px-4 py-3 text-center text-xs font-bold uppercase tracking-wider text-slate-500">Aksi</th>
           </tr>
         </thead>
-        <tbody id="exams-container" class="divide-y divide-slate-100">
-        </tbody>
+        <tbody id="exams-container" class="divide-y divide-slate-100"></tbody>
       </table>
+    </div>
+    
+    <div class="flex items-center justify-between px-6 py-3 border-t border-slate-100 bg-slate-50/50">
+      <p id="examPaginationInfo" class="text-xs text-slate-500">Menampilkan 0 - 0 dari 0 jadwal</p>
+      <div class="flex items-center gap-2">
+        <button onclick="changeExamPage(-1)" class="p-1.5 rounded-md text-slate-400 hover:bg-slate-200 transition-colors"><i data-lucide="chevron-left" class="w-5 h-5"></i></button>
+        <button onclick="changeExamPage(1)" class="p-1.5 rounded-md text-slate-400 hover:bg-slate-200 transition-colors"><i data-lucide="chevron-right" class="w-5 h-5"></i></button>
+      </div>
     </div>
   </div>
 
@@ -599,37 +599,26 @@
         </h3>
         <button onclick="tutupModalJadwal()" class="text-slate-400 hover:text-rose-500"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
-
       <form id="formJadwal" onsubmit="simpanJadwal(event)" class="p-6 space-y-4">
         <div class="grid grid-cols-2 gap-4">
-          <div><label class="block text-xs font-bold text-slate-700 mb-1">Tanggal</label><input type="date" id="examDate" required class="w-full rounded-lg border border-slate-200 p-2.5 text-sm"></div>
-          <div><label class="block text-xs font-bold text-slate-700 mb-1">Durasi (Menit)</label><input type="number" id="examDuration" placeholder="Contoh: 90" required class="w-full rounded-lg border border-slate-200 p-2.5 text-sm"></div>
-          <div><label class="block text-xs font-bold text-slate-700 mb-1">Mulai</label><input type="time" id="startTime" required class="w-full rounded-lg border border-slate-200 p-2.5 text-sm"></div>
-          <div><label class="block text-xs font-bold text-slate-700 mb-1">Selesai</label><input type="time" id="endTime" required class="w-full rounded-lg border border-slate-200 p-2.5 text-sm"></div>
+          <div><label class="block text-xs font-bold text-slate-700 mb-1">Tanggal</label><input type="date" id="examDate" required class="w-full rounded-lg border border-slate-200 p-2 text-sm"></div>
+          <div><label class="block text-xs font-bold text-slate-700 mb-1">Durasi (Menit)</label><input type="number" id="examDuration" required placeholder="Contoh: 90" class="w-full rounded-lg border border-slate-200 p-2 text-sm"></div>
+          <div><label class="block text-xs font-bold text-slate-700 mb-1">Waktu Mulai</label><input type="time" id="startTime" required class="w-full rounded-lg border border-slate-200 p-2 text-sm"></div>
+          <div><label class="block text-xs font-bold text-slate-700 mb-1">Waktu Selesai</label><input type="time" id="endTime" required class="w-full rounded-lg border border-slate-200 p-2 text-sm"></div>
         </div>
-        
-        <div><label class="block text-xs font-bold text-slate-700 mb-1">Mata Pelajaran</label><input type="text" id="examSubject" required placeholder="Contoh: Matematika" class="w-full rounded-lg border border-slate-200 p-2.5 text-sm"></div>
-        <div><label class="block text-xs font-bold text-slate-700 mb-1">Link Ujian</label><input type="url" id="examLink" required placeholder="https://..." class="w-full rounded-lg border border-slate-200 p-2.5 text-sm"></div>
-
-        <div>
-          <label class="block text-xs font-bold text-slate-700 mb-1">Target Kelas</label>
-          <div class="flex gap-2">
-            <input type="text" id="inputKelas" placeholder="Misal: 9A" class="flex-1 rounded-lg border border-slate-200 p-2.5 text-sm">
-            <button type="button" onclick="tambahTarget()" class="bg-slate-800 text-white px-4 rounded-lg font-bold text-sm">+</button>
-          </div>
-          <div id="targetTags" class="flex flex-wrap gap-2 mt-3"></div>
-        </div>
-
         <div class="grid grid-cols-2 gap-4">
-          <div><label class="block text-xs font-bold text-slate-700 mb-1">Token Masuk</label><input type="text" id="entryToken" required class="w-full rounded-lg border border-slate-200 p-2.5 text-sm uppercase"></div>
-          <div><label class="block text-xs font-bold text-slate-700 mb-1">Token Keluar</label><input type="text" id="exitToken" required class="w-full rounded-lg border border-slate-200 p-2.5 text-sm uppercase"></div>
+          <div><label class="block text-xs font-bold text-slate-700 mb-1">Mata Pelajaran</label><input type="text" id="examSubject" required placeholder="Contoh: Matematika" class="w-full rounded-lg border border-slate-200 p-2 text-sm"></div>
+          <div><label class="block text-xs font-bold text-slate-700 mb-1">Target Kelas</label><input type="text" id="targetClass" required placeholder="Contoh: 9A" class="w-full rounded-lg border border-slate-200 p-2 text-sm"></div>
         </div>
-
-        <button type="submit" class="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold text-sm hover:bg-indigo-700 mt-2 transition-colors">Simpan Jadwal</button>
+        <div><label class="block text-xs font-bold text-slate-700 mb-1">Link Ujian (G-Form / dll)</label><input type="url" id="examLink" required placeholder="https://..." class="w-full rounded-lg border border-slate-200 p-2 text-sm"></div>
+        <div class="grid grid-cols-2 gap-4">
+          <div><label class="block text-xs font-bold text-slate-700 mb-1">Token Masuk</label><input type="text" id="entryToken" required class="w-full rounded-lg border border-slate-200 p-2 text-sm uppercase"></div>
+          <div><label class="block text-xs font-bold text-slate-700 mb-1">Token Keluar</label><input type="text" id="exitToken" required class="w-full rounded-lg border border-slate-200 p-2 text-sm uppercase"></div>
+        </div>
+        <button type="submit" id="btnSubmitJadwal" class="w-full py-2.5 bg-indigo-600 text-white rounded-xl font-bold text-sm hover:bg-indigo-700 mt-2 transition-colors">Simpan Jadwal</button>
       </form>
     </div>
   </div>
-
 </div>
        
 <div id="view-live-session" class="page-view hidden">
